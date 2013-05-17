@@ -154,8 +154,6 @@ public class IngestManager {
         } catch (IngestModuleLoaderException ex) {
             logger.log(Level.SEVERE, "Error getting module loader");
         }
-
-
     }
 
     /**
@@ -231,7 +229,7 @@ public class IngestManager {
      */
     public void execute(final List<IngestModuleAbstract> modules, final List<Image> images) {
         logger.log(Level.INFO, "Will enqueue number of images: " + images.size() + " to " + modules.size() + " modules.");
-
+        
         if (!isIngestRunning() && ui != null) {
             ui.clearMessages();
         }
@@ -242,7 +240,6 @@ public class IngestManager {
         if (ui != null) {
             ui.restoreMessages();
         }
-        //logger.log(Level.INFO, "Queues: " + imageQueue.toString() + " " + AbstractFileQueue.toString());
     }
 
     /**
@@ -341,8 +338,6 @@ public class IngestManager {
                 }
             }
         }
-        //}
-
 
         //AbstractFile ingester
         boolean startAbstractFileIngester = false;
@@ -417,7 +412,6 @@ public class IngestManager {
         List<IngestImageThread> toStop = new ArrayList<IngestImageThread>();
         toStop.addAll(imageIngesters);
 
-
         for (IngestImageThread imageWorker : toStop) {
             IngestModuleImage s = imageWorker.getModule();
 
@@ -435,7 +429,6 @@ public class IngestManager {
                     logger.log(Level.WARNING, "Exception while stopping module: " + s.getName(), e);
                 }
             }
-
         }
 
         logger.log(Level.INFO, "stopped all");
@@ -540,7 +533,6 @@ public class IngestManager {
                 return module.hasBackgroundJobsRunning();
             }
 
-
         } else {
             //image module
             synchronized (this) {
@@ -565,10 +557,7 @@ public class IngestManager {
                     return false;
                 }
             }
-
         }
-
-
     }
 
     /**
@@ -585,7 +574,7 @@ public class IngestManager {
      *
      * @param processUnallocSpace
      */
-    void setProcessUnallocSpace(boolean processUnallocSpace) {
+    public void setProcessUnallocSpace(boolean processUnallocSpace) {
         this.processUnallocSpace = processUnallocSpace;
     }
 
@@ -646,6 +635,13 @@ public class IngestManager {
     public List<IngestModuleAbstractFile> enumerateAbstractFileModules() {
         return moduleLoader.getAbstractFileIngestModules();
     }
+    
+    public List<IngestModuleAbstract> enumerateAllModules() {
+        List<IngestModuleAbstract> modules = new ArrayList<>();
+        modules.addAll(enumerateImageModules());
+        modules.addAll(enumerateAbstractFileModules());
+        return modules;
+    }
 
     //image worker to remove itself when complete or interrupted
     void removeImageIngestWorker(IngestImageThread worker) {
@@ -672,7 +668,6 @@ public class IngestManager {
 
         IngestManagerStats() {
             errors = new HashMap<IngestModuleAbstract, Integer>();
-
         }
 
         /**
@@ -750,19 +745,8 @@ public class IngestManager {
         public String toHtmlString() {
             StringBuilder sb = new StringBuilder();
             sb.append("<html>");
-
             sb.append("Ingest time: ").append(getTotalTimeString()).append("<br />");
             sb.append("Total errors: ").append(errorsTotal).append("<br />");
-            /*
-             if (errorsTotal > 0) {
-             sb.append("Errors per module:");
-             for (IngestModuleAbstract module : errors.keySet()) {
-             final int errorsModule = errors.get(module);
-             sb.append("\t").append(module.getName()).append(": ").append(errorsModule).append("<br />");
-             }
-             }
-             * */
-
             sb.append("</html>");
             return sb.toString();
         }
