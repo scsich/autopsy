@@ -29,6 +29,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.sleuthkit.autopsy.coreutils.Logger;
 import javax.swing.JFileChooser;
@@ -45,6 +47,7 @@ class KeywordSearchListsManagementPanel extends javax.swing.JPanel implements Op
 
     private Logger logger = Logger.getLogger(KeywordSearchListsManagementPanel.class.getName());
     private KeywordListTableModel tableModel;
+    private KeywordSearchConfigController controller;
     
     /** Creates new form KeywordSearchListImportExportForm */
     KeywordSearchListsManagementPanel() {
@@ -53,8 +56,12 @@ class KeywordSearchListsManagementPanel extends javax.swing.JPanel implements Op
         customizeComponents();
     }
     
+    public void setController(KeywordSearchConfigController controller) {
+        this.controller = controller;
+        tableModel.setController(controller);
+    }
+    
     private void customizeComponents() {
-
 
         listsTable.setAutoscrolls(true);
         listsTable.setTableHeader(null);
@@ -65,31 +72,6 @@ class KeywordSearchListsManagementPanel extends javax.swing.JPanel implements Op
 
         listsTable.setCellSelectionEnabled(false);
         listsTable.setRowSelectionAllowed(true);
-        tableModel.resync();
-        
-        /*KeywordSearchListsXML.getCurrent().addPropertyChangeListener(new PropertyChangeListener() {
-
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(KeywordSearchListsXML.ListsEvt.LIST_ADDED.toString())) {
-                    tableModel.resync();
-                    for(int i = 0; i<listsTable.getRowCount(); i++) {
-                            String name = (String) listsTable.getValueAt(i, 0);
-                            if(((String) evt.getNewValue()).equals(name)) {
-                                listsTable.getSelectionModel().setSelectionInterval(i, i);
-                            }
-                    }
-                } else if (evt.getPropertyName().equals(KeywordSearchListsXML.ListsEvt.LIST_DELETED.toString())) {
-                    tableModel.resync();
-                    if(listsTable.getRowCount() > 0) {
-                        listsTable.getSelectionModel().setSelectionInterval(0, 0);
-                    } else {
-                        listsTable.getSelectionModel().clearSelection();
-                    }
-                }
-            }
-        });*/
-
     }
 
     /** This method is called from within the constructor to
@@ -156,7 +138,7 @@ class KeywordSearchListsManagementPanel extends javax.swing.JPanel implements Op
                                 .addComponent(newListButton, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
                                 .addComponent(importButton, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 4, Short.MAX_VALUE)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -165,7 +147,7 @@ class KeywordSearchListsManagementPanel extends javax.swing.JPanel implements Op
                 .addContainerGap()
                 .addComponent(keywordListsLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(newListButton)
@@ -175,38 +157,31 @@ class KeywordSearchListsManagementPanel extends javax.swing.JPanel implements Op
     }// </editor-fold>//GEN-END:initComponents
 
     private void newListButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newListButtonActionPerformed
-        KeywordSearchListsXML writer = KeywordSearchListsXML.getCurrent();
+        //KeywordSearchListsXML writer = KeywordSearchListsXML.getCurrent();
         String listName = (String) JOptionPane.showInputDialog(null, "New keyword list name:", "New Keyword List", JOptionPane.PLAIN_MESSAGE, null, null, "");
         if (listName == null || listName.trim().equals("")) {
             return;
         }
-        boolean shouldAdd = false;
-        if (writer.listExists(listName)) {
-            if (writer.getList(listName).isLocked() ) {
+        
+        //boolean shouldAdd = false;
+        KeywordSearchListsAbstract.KeywordSearchList list = tableModel.getKeywordList(listName);
+        boolean listExists = list != null;
+        if (listExists) {
+            if (list.isLocked() ) {
                 boolean replace = KeywordSearchUtil.displayConfirmDialog("New Keyword List", "Keyword List <" + listName 
                         + "> already exists as a read-only list. Do you want to replace it for the duration of the program (the change will not be persistent).", KeywordSearchUtil.DIALOG_MESSAGE_TYPE.WARN);
-                if (replace) {
-                    shouldAdd = true;
+                if (!replace) {
+                    return;
                 }
-            }
-            else {
+            } else {
                 boolean replace = KeywordSearchUtil.displayConfirmDialog("New Keyword List", "Keyword List <" + listName + "> already exists, do you want to replace it?", KeywordSearchUtil.DIALOG_MESSAGE_TYPE.WARN);
-                if (replace) {
-                    shouldAdd = true;
+                if (!replace) {
+                    return;
                 }
             }
-        } else {
-            shouldAdd = true;
         }
-        if (shouldAdd) {
-            writer.addList(listName, new ArrayList<Keyword>());
-        }
-        for (int i = 0; i < listsTable.getRowCount(); i++) {
-            if (listsTable.getValueAt(i, 0).equals(listName)) {
-                listsTable.getSelectionModel().addSelectionInterval(i, i);
-            }
-        }
-        tableModel.resync();
+        
+        tableModel.addNewList(listName);
     }//GEN-LAST:event_newListButtonActionPerformed
 
     private void importButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importButtonActionPerformed
@@ -246,11 +221,11 @@ class KeywordSearchListsManagementPanel extends javax.swing.JPanel implements Op
             List<KeywordSearchListsAbstract.KeywordSearchList> toImport = reader.getListsL();
             List<KeywordSearchListsAbstract.KeywordSearchList> toImportConfirmed = new ArrayList<KeywordSearchListsAbstract.KeywordSearchList>();
 
-            final KeywordSearchListsXML writer = KeywordSearchListsXML.getCurrent();
-
             for (KeywordSearchListsAbstract.KeywordSearchList list : toImport) {
                 //check name collisions
-                if (writer.listExists(list.getName())) {
+                
+                boolean listExists = tableModel.getKeywordList(list.getName()) != null;
+                if (listExists) {
                     Object[] options = {"Yes, overwrite",
                         "No, skip",
                         "Cancel import"};
@@ -275,16 +250,10 @@ class KeywordSearchListsManagementPanel extends javax.swing.JPanel implements Op
 
             }
 
-            if (toImportConfirmed.isEmpty()) {
-                return;
+            for (KeywordSearchListsAbstract.KeywordSearchList keywordSearchList : toImportConfirmed) {
+                tableModel.addNewList(keywordSearchList);
             }
-
-            if (!writer.writeLists(toImportConfirmed)) {
-                KeywordSearchUtil.displayDialog(FEATURE_NAME, "Keyword list not imported", KeywordSearchUtil.DIALOG_MESSAGE_TYPE.INFO);
-            }
-
         }
-        tableModel.resync();
     }//GEN-LAST:event_importButtonActionPerformed
 
     private void listsTableKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_listsTableKeyPressed
@@ -293,11 +262,9 @@ class KeywordSearchListsManagementPanel extends javax.swing.JPanel implements Op
             if(selected.length == 0) {
                 return;
             }
-            KeywordSearchListsXML deleter = KeywordSearchListsXML.getCurrent();
-            String listName = deleter.getListNames().get(selected[0]);
-            KeywordSearchListsXML.getCurrent().deleteList(listName);
+            
+            tableModel.removeSelected(selected);
         }
-        tableModel.resync();
     }//GEN-LAST:event_listsTableKeyPressed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -310,23 +277,93 @@ class KeywordSearchListsManagementPanel extends javax.swing.JPanel implements Op
 
     @Override
     public void store() {
-        // Implemented by parent panel
+        
+        // this is kinda ugly, but here goes
+        // This is to get the correct behavior if the user deleted a list
+        
+        // first, get the lists from the tableModel
+        List<KeywordSearchListsAbstract.KeywordSearchList> lists = tableModel.getKeywordLists();
+        
+        // then, delete all existing lists from the controller
+        List<String> listNames = controller.getKeywordSearchListNames();
+        for (String listName : listNames) {
+            controller.removeKeywordList(listName);
+        }
+        
+        // add lists back into the controller
+        for (KeywordSearchListsAbstract.KeywordSearchList keywordSearchList : lists) {
+            controller.addKeywordList(keywordSearchList);
+        }
     }
 
     @Override
     public void load() {
-        listsTable.clearSelection();
+        // this causes the tableModel to retrieve the lists from the controller
+        tableModel.propertyChange(null);
     }
     
-    void resync() {
-        tableModel.resync();
+    public KeywordListTableModel getTableModel() {
+        return tableModel;
     }
 
-    
-    private class KeywordListTableModel extends AbstractTableModel {
-        //data
+    class KeywordListTableModel extends AbstractTableModel implements PropertyChangeListener {
 
-        private KeywordSearchListsXML listsHandle = KeywordSearchListsXML.getCurrent();
+        KeywordSearchConfigController controller;
+        List<KeywordSearchListsAbstract.KeywordSearchList> lists = new ArrayList<>();
+        
+        public void setController(KeywordSearchConfigController controller) {
+            this.controller = controller;
+            controller.addPropertyChangeListener(this);
+            lists = controller.getKeywordSearchLists(false);
+        }
+        
+        public void addNewList(String listName) {
+            lists.add(new KeywordSearchListsAbstract.KeywordSearchList(listName));
+            fireTableDataChanged();
+        }
+        
+        public void addNewList(KeywordSearchListsAbstract.KeywordSearchList kwList) {
+            lists.add(kwList);
+            fireTableDataChanged();
+        }
+        
+        public void removeList(String name) {
+            KeywordSearchListsAbstract.KeywordSearchList theList = null;
+            for (KeywordSearchListsAbstract.KeywordSearchList keywordSearchList : lists) {
+                if (keywordSearchList.getName().equals(name)) {
+                    theList = keywordSearchList;
+                    break;
+                }
+            }
+            
+            if (theList != null) {
+                lists.remove(theList);
+                fireTableDataChanged();
+            }
+        }
+        
+        public void removeSelected(int[] selected) {
+            Arrays.sort(selected);
+            for(int arrayi = selected.length-1; arrayi >= 0; arrayi--) {
+                lists.remove(selected[arrayi]);
+            }
+            fireTableDataChanged();
+        }
+        
+        public List<KeywordSearchListsAbstract.KeywordSearchList> getKeywordLists() {
+            return Collections.unmodifiableList(lists);
+        }
+        
+        public KeywordSearchListsAbstract.KeywordSearchList getKeywordList(String name) {
+            KeywordSearchListsAbstract.KeywordSearchList theList = null;
+            for (KeywordSearchListsAbstract.KeywordSearchList keywordSearchList : lists) {
+                if (keywordSearchList.getName().equals(name)) {
+                    theList = keywordSearchList;
+                    break;
+                }
+            }
+            return theList;
+        }
 
         @Override
         public int getColumnCount() {
@@ -335,7 +372,7 @@ class KeywordSearchListsManagementPanel extends javax.swing.JPanel implements Op
 
         @Override
         public int getRowCount() {
-            return listsHandle.getNumberLists(false);
+            return lists.size();
         }
 
         @Override
@@ -345,7 +382,7 @@ class KeywordSearchListsManagementPanel extends javax.swing.JPanel implements Op
 
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
-            return listsHandle.getListNames(false).get(rowIndex);
+            return lists.get(rowIndex).getName();
         }
 
         @Override
@@ -363,19 +400,9 @@ class KeywordSearchListsManagementPanel extends javax.swing.JPanel implements Op
             return getValueAt(0, c).getClass();
         }
 
-        //delete selected from handle, events are fired from the handle
-        void deleteSelected(int[] selected) {
-            List<String> toDel = new ArrayList<String>();
-            for(int i = 0; i < selected.length; i++){
-                toDel.add((String) getValueAt(0, selected[i]));
-            }
-            for (String del : toDel) {
-                listsHandle.deleteList(del);
-            }
-        }
-
-        //resync model from handle, then update table
-        void resync() {
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            lists = controller.getKeywordSearchLists(false);
             fireTableDataChanged();
         }
     }

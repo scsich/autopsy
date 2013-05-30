@@ -19,7 +19,6 @@
 
 package org.sleuthkit.autopsy.keywordsearch;
 
-import java.util.logging.Level;
 import org.sleuthkit.autopsy.coreutils.Logger;
 import org.sleuthkit.autopsy.corecomponents.OptionsPanel;
 
@@ -34,8 +33,13 @@ final class KeywordSearchConfigurationPanel extends javax.swing.JPanel implement
     private KeywordSearchConfigurationPanel2 generalPanel;
 
     KeywordSearchConfigurationPanel() {
+        this(new KeywordSearchConfigController());
+    }
+    
+    KeywordSearchConfigurationPanel(KeywordSearchConfigController controller) {
         initComponents();
         customizeComponents();
+        setController(controller);
     }
     
     private void customizeComponents() {
@@ -46,7 +50,12 @@ final class KeywordSearchConfigurationPanel extends javax.swing.JPanel implement
         tabbedPane.insertTab("Lists", null, listsPanel, "List configuration", 0);
         tabbedPane.insertTab("String Extraction", null, languagesPanel, "String extraction configuration for Keyword Search Ingest", 1);
         tabbedPane.insertTab("General", null, generalPanel, "General configuration", 2);
-        
+    }
+    
+    public void setController(KeywordSearchConfigController controller) {
+        generalPanel.setController(controller);
+        listsPanel.setController(controller);
+        languagesPanel.setController(controller);
     }
 
     /**
@@ -76,12 +85,9 @@ final class KeywordSearchConfigurationPanel extends javax.swing.JPanel implement
      */
     @Override
     public void load() {
-        // Deselect all table rows
         listsPanel.load();
         languagesPanel.load();
         generalPanel.load();
-        // Reload the XML to avoid 'ghost' vars
-        KeywordSearchListsXML.getCurrent().reload();
     }
 
     /**
@@ -101,4 +107,5 @@ final class KeywordSearchConfigurationPanel extends javax.swing.JPanel implement
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTabbedPane tabbedPane;
     // End of variables declaration//GEN-END:variables
+
 }

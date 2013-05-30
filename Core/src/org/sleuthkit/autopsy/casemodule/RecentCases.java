@@ -53,7 +53,7 @@ public final class RecentCases extends CallableSystemAction implements Presenter
     private final static RecentCases INSTANCE = new RecentCases();
 
     private Deque<RecentCase> recentCases; // newest case is last case
-
+    private ModuleSettings moduleSettings = new ModuleSettings(ModuleSettings.MAIN_SETTINGS);
 
     /**
      * Gets the instance of the RecentCases singleton.
@@ -71,10 +71,10 @@ public final class RecentCases extends CallableSystemAction implements Presenter
         
         for (int i = 0; i < LENGTH; i++) {
             try{
-            if(ModuleSettings.getConfigSetting(ModuleSettings.MAIN_SETTINGS, nameKey(i)) == null)
-                ModuleSettings.setConfigSetting(ModuleSettings.MAIN_SETTINGS, nameKey(i), "");
-            if(ModuleSettings.getConfigSetting(ModuleSettings.MAIN_SETTINGS, pathKey(i)) == null)
-                ModuleSettings.setConfigSetting(ModuleSettings.MAIN_SETTINGS, pathKey(i), "");
+            if (moduleSettings.getConfigSetting(nameKey(i)) == null)
+                moduleSettings.setConfigSetting(nameKey(i), "");
+            if (moduleSettings.getConfigSetting(pathKey(i)) == null)
+                moduleSettings.setConfigSetting(pathKey(i), "");
             }
             catch(Exception e ){
                 
@@ -112,7 +112,7 @@ public final class RecentCases extends CallableSystemAction implements Presenter
 
     private String getName(int i) {
         try{
-        return ModuleSettings.getConfigSetting(ModuleSettings.MAIN_SETTINGS, nameKey(i));
+        return moduleSettings.getConfigSetting(nameKey(i));
         }
         catch(Exception e){
             return null;
@@ -121,7 +121,7 @@ public final class RecentCases extends CallableSystemAction implements Presenter
 
     private String getPath(int i) {
         try{
-        return ModuleSettings.getConfigSetting(ModuleSettings.MAIN_SETTINGS, pathKey(i));
+        return moduleSettings.getConfigSetting(pathKey(i));
         }
         catch(Exception e){
             return null;
@@ -129,11 +129,11 @@ public final class RecentCases extends CallableSystemAction implements Presenter
     }
 
     private void setName(int i, String name) {
-        ModuleSettings.setConfigSetting(ModuleSettings.MAIN_SETTINGS, nameKey(i), name);
+        moduleSettings.setConfigSetting(nameKey(i), name);
     }
 
     private void setPath(int i, String path) {
-        ModuleSettings.setConfigSetting(ModuleSettings.MAIN_SETTINGS, pathKey(i), path);
+        moduleSettings.setConfigSetting(pathKey(i), path);
     }
 
     private void setRecentCase(int i, RecentCase rc) {

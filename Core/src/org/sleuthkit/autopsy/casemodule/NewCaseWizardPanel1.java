@@ -167,7 +167,7 @@ class NewCaseWizardPanel1 implements WizardDescriptor.ValidatingPanel<WizardDesc
     public void readSettings(WizardDescriptor settings) {
         NewCaseVisualPanel1 component = getComponent();
         try {
-            String lastBaseDirectory = ModuleSettings.getConfigSetting(ModuleSettings.MAIN_SETTINGS, PROP_BASECASE);
+            String lastBaseDirectory = new ModuleSettings(ModuleSettings.MAIN_SETTINGS).getConfigSetting(PROP_BASECASE);
             component.getCaseParentDirTextField().setText(lastBaseDirectory);
             createdDirectory = (String) settings.getProperty("createdDirectory");
             if (createdDirectory != null && !createdDirectory.equals("")) {
@@ -193,7 +193,7 @@ class NewCaseWizardPanel1 implements WizardDescriptor.ValidatingPanel<WizardDesc
         settings.putProperty("caseName", getComponent().getCaseName());
         settings.putProperty("caseParentDir", getComponent().getCaseParentDir());
         settings.putProperty("createdDirectory", createdDirectory);
-        ModuleSettings.setConfigSetting(ModuleSettings.MAIN_SETTINGS, PROP_BASECASE, getComponent().getCaseParentDir());
+        new ModuleSettings(ModuleSettings.MAIN_SETTINGS).setConfigSetting(PROP_BASECASE, getComponent().getCaseParentDir());
     }
 
     @Override

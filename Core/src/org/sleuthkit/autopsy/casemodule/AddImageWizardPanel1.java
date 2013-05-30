@@ -173,7 +173,7 @@ class AddImageWizardPanel1 implements WizardDescriptor.Panel<WizardDescriptor>, 
         
         // Prepopulate the image directory from the properties file
         try{
-        String lastImageDirectory = ModuleSettings.getConfigSetting(ModuleSettings.MAIN_SETTINGS, PROP_LASTIMAGE);
+        String lastImageDirectory = new ModuleSettings(ModuleSettings.MAIN_SETTINGS).getConfigSetting(PROP_LASTIMAGE);
        
         component.setImagePath(lastImageDirectory);
         
@@ -222,7 +222,7 @@ class AddImageWizardPanel1 implements WizardDescriptor.Panel<WizardDescriptor>, 
         // Store the path to the first image selected into the properties file
         String firstImage = getComponent().getImagePath();
         String firstImagePath = firstImage.substring(0, firstImage.lastIndexOf(File.separator) + 1);
-        ModuleSettings.setConfigSetting(ModuleSettings.MAIN_SETTINGS, PROP_LASTIMAGE, firstImagePath);
+        new ModuleSettings(ModuleSettings.MAIN_SETTINGS).setConfigSetting(PROP_LASTIMAGE, firstImagePath);
     }
 
 

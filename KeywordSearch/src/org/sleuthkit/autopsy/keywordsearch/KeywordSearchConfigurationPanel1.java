@@ -24,13 +24,8 @@
  */
 package org.sleuthkit.autopsy.keywordsearch;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.List;
-import javax.swing.JOptionPane;
 import org.sleuthkit.autopsy.coreutils.Logger;
 import org.sleuthkit.autopsy.corecomponents.OptionsPanel;
-import org.sleuthkit.autopsy.ingest.IngestManager;
 
 /**
  * Panel containing all other Keyword search Options panels.
@@ -44,10 +39,19 @@ public class KeywordSearchConfigurationPanel1 extends javax.swing.JPanel impleme
     
     /** Creates new form KeywordSearchConfigurationPanel1 */
     KeywordSearchConfigurationPanel1() {
-        
+        this(new KeywordSearchConfigController());
+    }
+    
+    KeywordSearchConfigurationPanel1(KeywordSearchConfigController controller) {
         initComponents();
         customizeComponents();
         setName(KEYWORD_CONFIG_NAME);
+        setController(controller);
+    }
+    
+    public final void setController(KeywordSearchConfigController controller) {
+        listsManagementPanel.setController(controller);
+        editListPanel.setController(controller);
     }
 
     private void customizeComponents() {
@@ -55,77 +59,11 @@ public class KeywordSearchConfigurationPanel1 extends javax.swing.JPanel impleme
         editListPanel = new KeywordSearchEditListPanel();
 
         listsManagementPanel.addListSelectionListener(editListPanel);
-        editListPanel.addDeleteButtonActionPerformed(new ActionListener() {
- 
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (KeywordSearchUtil.displayConfirmDialog("Delete a keyword list"
-                        , "This will delete the keyword list globally (for all Cases). "
-                        + "Do you want to proceed with the deletion? "
-                        , KeywordSearchUtil.DIALOG_MESSAGE_TYPE.WARN) ) {
-
-                    KeywordSearchListsXML deleter = KeywordSearchListsXML.getCurrent();
-                    String toDelete = editListPanel.getCurrentKeywordList().getName();
-                    editListPanel.setCurrentKeywordList(null);
-                    editListPanel.initButtons();
-                    deleter.deleteList(toDelete);
-                    listsManagementPanel.resync();
-                }
-            }
-        });
         
-        editListPanel.addSaveButtonActionPerformed(new ActionListener() {
-           
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                final String FEATURE_NAME = "Save Keyword List";
-                KeywordSearchListsXML writer = KeywordSearchListsXML.getCurrent();
-                KeywordSearchListsAbstract.KeywordSearchList currentKeywordList = editListPanel.getCurrentKeywordList();
-
-                List<Keyword> keywords = currentKeywordList.getKeywords();
-                if (keywords.isEmpty()) {
-                    KeywordSearchUtil.displayDialog(FEATURE_NAME, "Keyword List is empty and cannot be saved", KeywordSearchUtil.DIALOG_MESSAGE_TYPE.INFO);
-                    return;
-                }
-
-                String listName = (String) JOptionPane.showInputDialog(
-                        null,
-                        "New keyword list name:",
-                        FEATURE_NAME,
-                        JOptionPane.PLAIN_MESSAGE,
-                        null,
-                        null,
-                        currentKeywordList != null ? currentKeywordList.getName() : "");
-                if (listName == null || listName.trim().equals("")) {
-                    return;
-                }
-
-                if (writer.listExists(listName) && writer.getList(listName).isLocked()) {
-                    KeywordSearchUtil.displayDialog(FEATURE_NAME, "Cannot overwrite default list", KeywordSearchUtil.DIALOG_MESSAGE_TYPE.WARN);
-                    return;
-                }
-                boolean shouldAdd = false;
-                if (writer.listExists(listName)) {
-                    boolean replace = KeywordSearchUtil.displayConfirmDialog(FEATURE_NAME, "Keyword List <" + listName + "> already exists, do you want to replace it?",
-                            KeywordSearchUtil.DIALOG_MESSAGE_TYPE.WARN);
-                    if (replace) {
-                        shouldAdd = true;
-                    }
-
-                } else {
-                    shouldAdd = true;
-                }
-
-                if (shouldAdd) {
-                    writer.addList(listName, keywords);
-                    KeywordSearchUtil.displayDialog(FEATURE_NAME, "Keyword List <" + listName + "> saved", KeywordSearchUtil.DIALOG_MESSAGE_TYPE.INFO);
-                }
-
-                //currentKeywordList = writer.getList(listName);
-                
-                listsManagementPanel.resync();
-            }
-        });
+        // the editListPanel needs a reference to the listsManagementPanel's
+        // table model so that it can retrieve the name of the currently selected
+        // list which it can use to get the list itself through the controller.
+        editListPanel.setKeywordListTableModel(listsManagementPanel.getTableModel());
         
         mainSplitPane.setLeftComponent(listsManagementPanel);
         mainSplitPane.setRightComponent(editListPanel);
@@ -135,14 +73,14 @@ public class KeywordSearchConfigurationPanel1 extends javax.swing.JPanel impleme
     
     @Override
     public void store() {
-        KeywordSearchListsXML.getCurrent().save(false);
-        //refresh the list viewer/searcher panel
-        KeywordSearchListsViewerPanel.getDefault().resync();
+        listsManagementPanel.store();
+        editListPanel.store();
     }
     
     @Override
     public void load() {
         listsManagementPanel.load();
+        editListPanel.load();
     }
 
     /** This method is called from within the constructor to

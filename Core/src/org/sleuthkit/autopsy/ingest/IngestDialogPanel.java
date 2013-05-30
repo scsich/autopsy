@@ -36,25 +36,34 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import org.sleuthkit.autopsy.corecomponents.AdvancedConfigurationDialog;
+import org.sleuthkit.autopsy.coreutils.ModuleSettings;
 
 /**
  * main configuration panel for all ingest modules, reusable JPanel component
  */
 public class IngestDialogPanel extends javax.swing.JPanel {
 
-    private IngestModuleAbstract currentModule;
-    private ModulesTableModel tableModel;
-    private static final Logger logger = Logger.getLogger(IngestDialogPanel.class.getName());
     public static final String DISABLED_MOD = "Disabled_Ingest_Modules";
     public static final String PARSE_UNALLOC = "Process_Unallocated_Space";
+    
+    private IngestModuleAbstract currentModule;
+    private ModulesTableModel tableModel;
+    private String context;
+    private static final Logger logger = Logger.getLogger(IngestDialogPanel.class.getName());
+    
 
     /**
      * Creates new form IngestDialogPanel
      */
     public IngestDialogPanel() {
         tableModel = new ModulesTableModel();
+        context = ModuleSettings.DEFAULT_CONTEXT;
         initComponents();
         customizeComponents();
+    }
+
+    public void setContext(String context) {
+        this.context = context;
     }
 
     public IngestModuleAbstract getCurrentIngestModule() {
@@ -101,7 +110,7 @@ public class IngestDialogPanel extends javax.swing.JPanel {
                     // add the module-specific configuration panel, if there is one
                     simplePanel.removeAll();
                     if (currentModule.hasSimpleConfiguration()) {
-                        simplePanel.add(currentModule.getSimpleConfiguration());
+                        simplePanel.add(currentModule.getSimpleConfiguration(context));
                     }
                     simplePanel.revalidate();
                     simplePanel.repaint();
@@ -271,7 +280,7 @@ public class IngestDialogPanel extends javax.swing.JPanel {
                 dialog.close();
             }
         });
-        dialog.display(currentModule.getAdvancedConfiguration());
+        dialog.display(currentModule.getAdvancedConfiguration(context));
     }//GEN-LAST:event_advancedButtonActionPerformed
 
     private void processUnallocCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_processUnallocCheckboxActionPerformed

@@ -600,12 +600,12 @@ public class ExtractIE extends Extract implements IngestModuleImage {
     }
 
     @Override
-    public javax.swing.JPanel getSimpleConfiguration() {
+    public javax.swing.JPanel getSimpleConfiguration(String context) {
         return null;
     }
 
     @Override
-    public javax.swing.JPanel getAdvancedConfiguration() {
+    public javax.swing.JPanel getAdvancedConfiguration(String context) {
         return null;
     }
 

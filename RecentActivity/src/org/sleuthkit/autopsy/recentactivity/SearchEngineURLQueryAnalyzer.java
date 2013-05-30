@@ -440,12 +440,12 @@ public class SearchEngineURLQueryAnalyzer extends Extract implements IngestModul
     }
 
     @Override
-    public JPanel getSimpleConfiguration() {
+    public JPanel getSimpleConfiguration(String context) {
         return null;
     }
 
     @Override
-    public JPanel getAdvancedConfiguration() {
+    public JPanel getAdvancedConfiguration(String context) {
         return null;
     }
 }

@@ -163,6 +163,7 @@ public class Server {
     private ServerAction serverAction;
     private InputStreamPrinterThread errorRedirectThread;
     private String solrUrl;
+    private ModuleSettings settings;
 
     /**
      * New instance for the server at the given URL
@@ -170,6 +171,9 @@ public class Server {
      * @param url should be something like "http://localhost:23232/solr/"
      */
     Server() {
+        
+        settings = new ModuleSettings(PROPERTIES_FILE);
+
         initSettings();
 
         this.solrUrl = "http://localhost:" + currentSolrServerPort + "/solr";
@@ -178,33 +182,38 @@ public class Server {
         solrFolder = InstalledFileLocator.getDefault().locate("solr", Server.class.getPackage().getName(), false);
         instanceDir = solrFolder.getAbsolutePath() + File.separator + "solr";
         javaPath = PlatformUtil.getJavaPath();
-
+        
         logger.log(Level.INFO, "Created Server instance");
     }
 
     private void initSettings() {
-        if (ModuleSettings.settingExists(PROPERTIES_FILE, PROPERTIES_CURRENT_SERVER_PORT)) {
+        
+        // init the server port number
+        String portNumStr = settings.getConfigSetting(PROPERTIES_CURRENT_SERVER_PORT);
+        if (portNumStr == null) {
+            currentSolrServerPort = DEFAULT_SOLR_SERVER_PORT;
+            settings.setConfigSetting(PROPERTIES_CURRENT_SERVER_PORT, String.valueOf(currentSolrServerPort));
+        } else {
             try {
-                currentSolrServerPort = Integer.decode(ModuleSettings.getConfigSetting(PROPERTIES_FILE, PROPERTIES_CURRENT_SERVER_PORT));
+                currentSolrServerPort = Integer.decode(portNumStr);
             } catch (NumberFormatException nfe) {
                 logger.log(Level.WARNING, "Could not decode indexing server port, value was not a valid port number, using the default. ", nfe);
                 currentSolrServerPort = DEFAULT_SOLR_SERVER_PORT;
             }
-        } else {
-            currentSolrServerPort = DEFAULT_SOLR_SERVER_PORT;
-            ModuleSettings.setConfigSetting(PROPERTIES_FILE, PROPERTIES_CURRENT_SERVER_PORT, String.valueOf(currentSolrServerPort));
         }
-
-        if (ModuleSettings.settingExists(PROPERTIES_FILE, PROPERTIES_CURRENT_STOP_PORT)) {
+        
+        // init the stop port
+        String stopPortNumStr = settings.getConfigSetting(PROPERTIES_CURRENT_STOP_PORT);
+        if (stopPortNumStr == null) {
+            currentSolrStopPort = DEFAULT_SOLR_STOP_PORT;
+            settings.setConfigSetting(PROPERTIES_CURRENT_STOP_PORT, String.valueOf(currentSolrStopPort));
+        } else {
             try {
-                currentSolrStopPort = Integer.decode(ModuleSettings.getConfigSetting(PROPERTIES_FILE, PROPERTIES_CURRENT_STOP_PORT));
+                currentSolrStopPort = Integer.decode(stopPortNumStr);
             } catch (NumberFormatException nfe) {
                 logger.log(Level.WARNING, "Could not decode indexing server stop port, value was not a valid port number, using default", nfe);
                 currentSolrStopPort = DEFAULT_SOLR_STOP_PORT;
             }
-        } else {
-            currentSolrStopPort = DEFAULT_SOLR_STOP_PORT;
-            ModuleSettings.setConfigSetting(PROPERTIES_FILE, PROPERTIES_CURRENT_STOP_PORT, String.valueOf(currentSolrStopPort));
         }
     }
 
@@ -430,7 +439,7 @@ public class Server {
      */
     void changeSolrServerPort(int port) {
         currentSolrServerPort = port;
-        ModuleSettings.setConfigSetting(PROPERTIES_FILE, PROPERTIES_CURRENT_SERVER_PORT, String.valueOf(port));
+        settings.setConfigSetting(PROPERTIES_CURRENT_SERVER_PORT, String.valueOf(port));
     }
 
     /**
@@ -440,7 +449,7 @@ public class Server {
      */
     void changeSolrStopPort(int port) {
         currentSolrStopPort = port;
-        ModuleSettings.setConfigSetting(PROPERTIES_FILE, PROPERTIES_CURRENT_STOP_PORT, String.valueOf(port));
+        settings.setConfigSetting(PROPERTIES_CURRENT_STOP_PORT, String.valueOf(port));
     }
 
     /**

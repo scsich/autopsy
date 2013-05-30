@@ -33,6 +33,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import org.sleuthkit.autopsy.casemodule.GeneralIngestConfigurator;
 import org.sleuthkit.autopsy.casemodule.IngestConfigurator;
+import org.sleuthkit.autopsy.coreutils.ModuleSettings;
 import org.sleuthkit.datamodel.Image;
 
 /**
@@ -40,7 +41,7 @@ import org.sleuthkit.datamodel.Image;
  */
 public class IngestDialog extends JDialog {
     
-    private static final String MODULE_CONTEXT = "MainIngest";
+    //private static final String MODULE_CONTEXT = "MainIngest";
     
     private static final String TITLE = "Ingest Modules";
     private static Dimension DIMENSIONS = new Dimension(500, 300);
@@ -50,7 +51,7 @@ public class IngestDialog extends JDialog {
 
     public IngestDialog(JFrame frame, String title, boolean modal) {
         super(frame, title, modal);
-        ingestConfigurator = new GeneralIngestConfigurator(MODULE_CONTEXT);
+        ingestConfigurator = new GeneralIngestConfigurator(ModuleSettings.DEFAULT_CONTEXT);
         ingestConfigurator.reload();
     }
     

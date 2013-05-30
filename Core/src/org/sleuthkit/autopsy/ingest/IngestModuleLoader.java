@@ -124,7 +124,7 @@ public final class IngestModuleLoader {
         imagePipeline = new ArrayList<IngestModuleImage>();
         dateFormatter = new SimpleDateFormat(DATE_FORMAT);
 
-        String numModDiscoveredStr = ModuleSettings.getConfigSetting(IngestManager.MODULE_PROPERTIES, CUR_MODULES_DISCOVERED_SETTING);
+        String numModDiscoveredStr = new ModuleSettings(IngestManager.MODULE_PROPERTIES).getConfigSetting(CUR_MODULES_DISCOVERED_SETTING);
         if (numModDiscoveredStr != null) {
             try {
                 numModDiscovered = Integer.valueOf(numModDiscoveredStr);
@@ -618,7 +618,7 @@ public final class IngestModuleLoader {
         modRaw.valid = false; //to be validated
 
         //save the current numModDiscovered
-        ModuleSettings.setConfigSetting(IngestManager.MODULE_PROPERTIES, CUR_MODULES_DISCOVERED_SETTING, Integer.toString(numModDiscovered));
+        new ModuleSettings(IngestManager.MODULE_PROPERTIES).setConfigSetting(CUR_MODULES_DISCOVERED_SETTING, Integer.toString(numModDiscovered));
 
         //find the pipeline of that type
         IngestModuleLoader.XmlPipelineRaw pipeline = null;
@@ -918,7 +918,7 @@ public final class IngestModuleLoader {
                     logger.log(Level.WARNING, "Invalid module order, need integer: " + moduleOrder + ", adding to end of the list");
                     module.order = Integer.MAX_VALUE - (numModDiscovered++);
                     //save the current numModDiscovered
-                    ModuleSettings.setConfigSetting(IngestManager.MODULE_PROPERTIES, CUR_MODULES_DISCOVERED_SETTING, Integer.toString(numModDiscovered));
+                    new ModuleSettings(IngestManager.MODULE_PROPERTIES).setConfigSetting(CUR_MODULES_DISCOVERED_SETTING, Integer.toString(numModDiscovered));
 
                 }
                 module.type = moduleType;

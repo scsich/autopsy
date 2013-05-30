@@ -39,10 +39,12 @@ public class GeneralIngestConfigurator implements IngestConfigurator {
     private IngestManager manager;
     private IngestDialogPanel ingestDialogPanel;
     private String moduleContext;
+    private ModuleSettings moduleSettings = new ModuleSettings(moduleContext);
 
     public GeneralIngestConfigurator(String moduleContext) {
         this.moduleContext = moduleContext;
         ingestDialogPanel = new IngestDialogPanel();
+        ingestDialogPanel.setContext(moduleContext);
         manager = IngestManager.getDefault();
         reload();
     }
@@ -87,9 +89,9 @@ public class GeneralIngestConfigurator implements IngestConfigurator {
         // create a csv list
         String disabledModulesCsv = moduleListToCsv(disabledModules);
         
-        ModuleSettings.setConfigSetting(moduleContext, DISABLED_MOD, disabledModulesCsv);
+        moduleSettings.setConfigSetting(DISABLED_MOD, disabledModulesCsv);
         String processUnalloc = Boolean.toString(ingestDialogPanel.processUnallocSpaceEnabled());
-        ModuleSettings.setConfigSetting(moduleContext, PARSE_UNALLOC, processUnalloc);
+        moduleSettings.setConfigSetting(PARSE_UNALLOC, processUnalloc);
     }
     
     public static String moduleListToCsv(List<IngestModuleAbstract> lst) {
@@ -134,7 +136,7 @@ public class GeneralIngestConfigurator implements IngestConfigurator {
     public void reload() {
         
         // get the csv list of disabled modules
-        String disabledModulesCsv = ModuleSettings.getConfigSetting(moduleContext, DISABLED_MOD);
+        String disabledModulesCsv = moduleSettings.getConfigSetting(DISABLED_MOD);
         
         // create a list of modules from it
         List<IngestModuleAbstract> disabledModules = csvToModuleList(disabledModulesCsv);
@@ -142,7 +144,7 @@ public class GeneralIngestConfigurator implements IngestConfigurator {
         // tell th ingestDialogPanel to unselect these modules
         ingestDialogPanel.setDisabledModules(disabledModules);
         
-        boolean processUnalloc = Boolean.parseBoolean(ModuleSettings.getConfigSetting(moduleContext, PARSE_UNALLOC));
+        boolean processUnalloc = Boolean.parseBoolean(moduleSettings.getConfigSetting(PARSE_UNALLOC));
         ingestDialogPanel.setProcessUnallocSpaceEnabled(processUnalloc);
     }
 

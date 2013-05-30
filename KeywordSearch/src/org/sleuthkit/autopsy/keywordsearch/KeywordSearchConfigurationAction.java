@@ -53,7 +53,6 @@ class KeywordSearchConfigurationAction extends CallableSystemAction{
             @Override
             public void windowClosing(WindowEvent e) {
                 dialog.close();
-                KeywordSearchListsXML.getCurrent().reload();
             }
         };
         dialog.addWindowListener(exitListener);

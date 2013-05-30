@@ -155,7 +155,7 @@ public interface IngestModuleAbstract {
      * 
      * @return JPanel containing basic configuration widgets or null if simple configuration is not available
      */
-    public javax.swing.JPanel getSimpleConfiguration();
+    public javax.swing.JPanel getSimpleConfiguration(String context);
     
      /**
      * Implements advanced module configuration exposed to the user before ingest starts
@@ -164,5 +164,5 @@ public interface IngestModuleAbstract {
      * 
      * @return JPanel containing advanced configuration widgets or null if advanced configuration is not available
      */
-    public javax.swing.JPanel getAdvancedConfiguration();
+    public javax.swing.JPanel getAdvancedConfiguration(String context);
 }

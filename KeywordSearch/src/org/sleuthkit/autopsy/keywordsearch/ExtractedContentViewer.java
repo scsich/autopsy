@@ -415,7 +415,7 @@ public class ExtractedContentViewer implements DataContentViewer {
             if (contentObj instanceof AbstractFile) { 
                 //we know it's AbstractFile, but do quick check to make sure if we index other objects in future
                 boolean isKnown = FileKnown.KNOWN.equals(((AbstractFile)contentObj).getKnown());
-                if (isKnown && KeywordSearchSettings.getSkipKnown()) {
+                if (isKnown && new KeywordSearchSettings().getSkipKnown()) {
                     msg += "<p style='font-style:italic'>It is a 'known' file and the current settings opt to skip indexing 'known' files during ingest. </p>";
                 }
                 

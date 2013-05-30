@@ -42,6 +42,7 @@ public final class CaseOpenAction implements ActionListener {
     private static final String PROP_BASECASE = "LBL_BaseCase_PATH";
     private final JFileChooser fc = new JFileChooser();
     private FileFilter autFilter;
+    private ModuleSettings moduleSettings = new ModuleSettings(ModuleSettings.MAIN_SETTINGS);
 
     /**
      * The constructor
@@ -55,8 +56,8 @@ public final class CaseOpenAction implements ActionListener {
         fc.setMultiSelectionEnabled(false);
         fc.setFileFilter(autFilter);
         try {
-            if (ModuleSettings.getConfigSetting(ModuleSettings.MAIN_SETTINGS, PROP_BASECASE) != null) {
-                fc.setCurrentDirectory(new File(ModuleSettings.getConfigSetting("Case", PROP_BASECASE)));
+            if (moduleSettings.getConfigSetting(PROP_BASECASE) != null) {
+                fc.setCurrentDirectory(new File(moduleSettings.getConfigSetting(PROP_BASECASE)));
             }
         } catch (Exception e) {
         }
@@ -77,7 +78,7 @@ public final class CaseOpenAction implements ActionListener {
         if (retval == JFileChooser.APPROVE_OPTION) {
             String path = fc.getSelectedFile().getPath();
             String dirPath = fc.getSelectedFile().getParent();
-            ModuleSettings.setConfigSetting(ModuleSettings.MAIN_SETTINGS, PROP_BASECASE, dirPath.substring(0, dirPath.lastIndexOf(File.separator)));
+            moduleSettings.setConfigSetting(PROP_BASECASE, dirPath.substring(0, dirPath.lastIndexOf(File.separator)));
             // check if the file exists
             if (!new File(path).exists()) {
                 JOptionPane.showMessageDialog(null, "Error: File doesn't exist.", "Error", JOptionPane.ERROR_MESSAGE);

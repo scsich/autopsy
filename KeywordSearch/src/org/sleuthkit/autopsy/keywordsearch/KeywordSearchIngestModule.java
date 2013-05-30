@@ -44,9 +44,9 @@ import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.sleuthkit.autopsy.casemodule.Case;
 import org.sleuthkit.autopsy.coreutils.EscapeUtil;
+import org.sleuthkit.autopsy.coreutils.ModuleSettings;
 import org.sleuthkit.autopsy.coreutils.StopWatch;
 import org.sleuthkit.autopsy.coreutils.StringExtract.StringExtractUnicodeTable.SCRIPT;
 import org.sleuthkit.autopsy.ingest.PipelineContext;
@@ -95,6 +95,7 @@ public final class KeywordSearchIngestModule implements IngestModuleAbstractFile
         }
     };
     private static final Logger logger = Logger.getLogger(KeywordSearchIngestModule.class.getName());
+    private String context = ModuleSettings.DEFAULT_CONTEXT;
     public static final String MODULE_NAME = "Keyword Search";
     public static final String MODULE_DESCRIPTION = "Performs file indexing and periodic search using keywords and regular expressions in lists.";
     final public static String MODULE_VERSION = "1.0";
@@ -106,6 +107,7 @@ public final class KeywordSearchIngestModule implements IngestModuleAbstractFile
     private volatile boolean runSearcher = false; //whether to run searcher next time
     private List<Keyword> keywords; //keywords to search
     private List<String> keywordLists; // lists currently being searched
+    private boolean skipKnown;
     private Map<String, KeywordSearchListsAbstract.KeywordSearchList> keywordToList; //keyword to list name mapping
     private Timer commitTimer;
     private Timer searchTimer;
@@ -127,9 +129,11 @@ public final class KeywordSearchIngestModule implements IngestModuleAbstractFile
     private static List<AbstractFileExtract> textExtractors;
     private static AbstractFileStringExtract stringExtractor;
     private boolean initialized = false;
-    private KeywordSearchConfigurationPanel panel;
+    private KeywordSearchConfigurationPanel advancedPanel;
+    private KeywordSearchIngestSimplePanel simplePanel;
     private Tika tikaFormatDetector;
-
+    private Map<String, KeywordSearchConfigController> controllers = new HashMap<>();
+    
     private enum IngestStatus {
 
         INGESTED, EXTRACTED_INGESTED, SKIPPED, INGESTED_META
@@ -150,6 +154,16 @@ public final class KeywordSearchIngestModule implements IngestModuleAbstractFile
             instance = new KeywordSearchIngestModule();
         }
         return instance;
+    }
+    
+    private KeywordSearchConfigController getController(String context) {
+        KeywordSearchConfigController controller = controllers.get(context);
+        if (controller == null) {
+            controller = new KeywordSearchConfigController(context);
+            controllers.put(context, controller);
+            logger.log(Level.INFO, "Created a new KeywordSearchConfigController for context: " + context);
+        }
+        return controller;
     }
 
     @Override
@@ -175,7 +189,7 @@ public final class KeywordSearchIngestModule implements IngestModuleAbstractFile
             indexer.indexFile(abstractFile, false);
             //notify depending module that keyword search (would) encountered error for this file
             return ProcessResult.ERROR;
-        } else if (KeywordSearchSettings.getSkipKnown() && abstractFile.getKnown().equals(FileKnown.KNOWN)) {
+        } else if (skipKnown && abstractFile.getKnown().equals(FileKnown.KNOWN)) {
             //index meta-data only
             indexer.indexFile(abstractFile, false);
             return ProcessResult.OK;
@@ -339,9 +353,28 @@ public final class KeywordSearchIngestModule implements IngestModuleAbstractFile
      */
     @Override
     public void init(IngestModuleInit initContext) {
+        
+        // Note: we're using the string value associated with the initContext as
+        // the configuration context
+        context = initContext.getModuleArgs();
+        
+        // validate context
+        if (context == null || context.isEmpty()) {
+            logger.log(Level.SEVERE, "Context passed into KeywordSearchIngestModule.init() was invalid; using default context");
+            context = ModuleSettings.DEFAULT_CONTEXT;
+        }
+        
+        // create a new KeywordSearchSettins object with this context
+        //settings = new KeywordSearchSettings(context);
+        
+        // get the controller for this context
+        KeywordSearchConfigController currentController = getController(context);
+        
         logger.log(Level.INFO, "init()");
         services = IngestServices.getDefault();
         initialized = false;
+        
+        skipKnown = currentController.isSkipKnown();
 
         caseHandle = Case.getCurrentCase().getSleuthkitCase();
 
@@ -371,13 +404,13 @@ public final class KeywordSearchIngestModule implements IngestModuleAbstractFile
 
         //initialize extractors
         stringExtractor = new AbstractFileStringExtract();
-        stringExtractor.setScripts(KeywordSearchSettings.getStringExtractScripts());
-        stringExtractor.setOptions(KeywordSearchSettings.getStringExtractOptions());
+        stringExtractor.setScripts(currentController.getStringExtractScripts());
+        stringExtractor.setOptions(currentController.getStringExtractOptionsMap());
 
 
         //log the scripts used for debugging
         final StringBuilder sbScripts = new StringBuilder();
-        for (SCRIPT s : KeywordSearchSettings.getStringExtractScripts()) {
+        for (SCRIPT s : currentController.getStringExtractScripts()) {
             sbScripts.append(s.name()).append(" ");
         }
         logger.log(Level.INFO, "Using string extract scripts: " + sbScripts.toString());
@@ -410,7 +443,7 @@ public final class KeywordSearchIngestModule implements IngestModuleAbstractFile
 
         indexer = new Indexer();
 
-        final int updateIntervalMs = KeywordSearchSettings.getUpdateFrequency().getTime() * 60 * 1000;
+        final int updateIntervalMs = new KeywordSearchSettings(context).getUpdateFrequency().getTime() * 60 * 1000;
         logger.log(Level.INFO, "Using commit interval (ms): " + updateIntervalMs);
         logger.log(Level.INFO, "Using searcher interval (ms): " + updateIntervalMs);
 
@@ -439,33 +472,27 @@ public final class KeywordSearchIngestModule implements IngestModuleAbstractFile
     }
 
     @Override
-    public javax.swing.JPanel getSimpleConfiguration() {
-        KeywordSearchListsXML.getCurrent().reload();
-        return new KeywordSearchIngestSimplePanel();
+    public javax.swing.JPanel getSimpleConfiguration(String context) {
+        KeywordSearchConfigController controller = getController(context);
+        simplePanel = new KeywordSearchIngestSimplePanel(controller);
+        return simplePanel;
     }
 
     @Override
-    public javax.swing.JPanel getAdvancedConfiguration() {
-        //return KeywordSearchConfigurationPanel.getDefault();
-        getPanel().load();
-        return getPanel();
-    }
-
-    private KeywordSearchConfigurationPanel getPanel() {
-        if (panel == null) {
-            panel = new KeywordSearchConfigurationPanel();
-        }
-        return panel;
+    public javax.swing.JPanel getAdvancedConfiguration(String context) {
+        KeywordSearchConfigController controller = getController(context);
+        advancedPanel = new KeywordSearchConfigurationPanel(controller);
+        return advancedPanel;
     }
 
     @Override
     public void saveAdvancedConfiguration() {
-        getPanel().store();
+        advancedPanel.store();
     }
 
     @Override
     public void saveSimpleConfiguration() {
-        KeywordSearchListsXML.getCurrent().save();
+        // saving simple configuration is not necessary here
     }
 
     /**
@@ -570,7 +597,10 @@ public final class KeywordSearchIngestModule implements IngestModuleAbstractFile
      * @param listsToAdd lists to add temporarily to the ongoing ingest
      */
     void addKeywordLists(List<String> listsToAdd) {
-        KeywordSearchListsXML loader = KeywordSearchListsXML.getCurrent();
+        //KeywordSearchListsXML loader = KeywordSearchListsXML.getCurrent();
+        
+        // get the keyword lists for the current context
+        List<KeywordSearchListsAbstract.KeywordSearchList> lists = controllers.get(context).getKeywordSearchLists();
 
         keywords.clear();
         keywordLists.clear();
@@ -578,7 +608,7 @@ public final class KeywordSearchIngestModule implements IngestModuleAbstractFile
 
         StringBuilder sb = new StringBuilder();
 
-        for (KeywordSearchListsAbstract.KeywordSearchList list : loader.getListsL()) {
+        for (KeywordSearchListsAbstract.KeywordSearchList list : lists) {
             final String listName = list.getName();
             if (list.getUseForIngest() == true
                     || (listsToAdd != null && listsToAdd.contains(listName))) {
@@ -1152,13 +1182,16 @@ public final class KeywordSearchIngestModule implements IngestModuleAbstractFile
          * Sync-up the updated keywords from the currently used lists in the XML
          */
         private void updateKeywords() {
-            KeywordSearchListsXML loader = KeywordSearchListsXML.getCurrent();
+            //KeywordSearchListsXML loader = KeywordSearchListsXML.getCurrent();
+            
+            // get the controller for the current context
+            KeywordSearchConfigController controller = controllers.get(context);
 
             this.keywords.clear();
             this.keywordToList.clear();
 
             for (String name : this.keywordLists) {
-                KeywordSearchListsAbstract.KeywordSearchList list = loader.getList(name);
+                KeywordSearchListsAbstract.KeywordSearchList list = controller.getKeywordSearchList(name);
                 for (Keyword k : list.getKeywords()) {
                     this.keywords.add(k);
                     this.keywordToList.put(k.getQuery(), list);
@@ -1199,7 +1232,7 @@ public final class KeywordSearchIngestModule implements IngestModuleAbstractFile
                 //unless final searcher is pending
                 if (finalSearcher == null) {
                     //we need a new Timer object, because restarting previus will not cause firing of the action
-                    final int updateIntervalMs = KeywordSearchSettings.getUpdateFrequency().getTime() * 60 * 1000;
+                    final int updateIntervalMs = new KeywordSearchSettings(context).getUpdateFrequency().getTime() * 60 * 1000;
                     searchTimer = new Timer(updateIntervalMs, new SearchTimerAction());
                     searchTimer.start();
                 }

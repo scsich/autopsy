@@ -36,7 +36,6 @@ import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
-import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.sleuthkit.autopsy.corecomponentinterfaces.DataResultViewer;
 import org.sleuthkit.autopsy.corecomponents.DataResultTopComponent;
@@ -238,10 +237,14 @@ public class KeywordSearchResultFactory extends ChildFactory<KeyValueQuery> {
                 return false;
             }
             final Map<AbstractFile, Integer> hitContents = ContentHit.flattenResults(tcqRes);
+            
+            // TODO, WARNING: this may not be the right thing to do!
+            // create a new KeywordSearchConfigController with default context
+            KeywordSearchConfigController controller = new KeywordSearchConfigController();
 
             //get listname
             String listName = "";
-            KeywordSearchListsAbstract.KeywordSearchList list = KeywordSearchListsXML.getCurrent().getListWithKeyword(tcq.getQueryString());
+            KeywordSearchListsAbstract.KeywordSearchList list = controller.getListWithKeyword(tcq.getQueryString());
             if (list != null) {
                 listName = list.getName();
             }
