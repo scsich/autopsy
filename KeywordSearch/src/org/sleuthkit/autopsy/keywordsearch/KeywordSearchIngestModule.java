@@ -61,6 +61,7 @@ import org.sleuthkit.datamodel.BlackboardArtifact;
 import org.sleuthkit.datamodel.BlackboardArtifact.ARTIFACT_TYPE;
 import org.sleuthkit.datamodel.BlackboardAttribute;
 import org.sleuthkit.datamodel.AbstractFile;
+import org.sleuthkit.datamodel.Image;
 import org.sleuthkit.datamodel.ReadContentInputStream;
 import org.sleuthkit.datamodel.SleuthkitCase;
 import org.sleuthkit.datamodel.TskCoreException;
@@ -77,7 +78,7 @@ import org.sleuthkit.datamodel.TskData.FileKnown;
  *
  * Registered as a module in layer.xml
  */
-public final class KeywordSearchIngestModule implements IngestModuleAbstractFile {
+public final class KeywordSearchIngestModule extends IngestModuleAbstractFile {
 
     enum UpdateFrequency {
 
@@ -99,7 +100,6 @@ public final class KeywordSearchIngestModule implements IngestModuleAbstractFile
     public static final String MODULE_NAME = "Keyword Search";
     public static final String MODULE_DESCRIPTION = "Performs file indexing and periodic search using keywords and regular expressions in lists.";
     final public static String MODULE_VERSION = "1.0";
-    private String args;
     private static KeywordSearchIngestModule instance = null;
     private IngestServices services;
     private Ingester ingester = null;
@@ -176,7 +176,11 @@ public final class KeywordSearchIngestModule implements IngestModuleAbstractFile
         }
         try {
             //add image id of the file to the set, keeping track of images being ingested
-            curImageIds.add(abstractFile.getImage().getId());
+            final Image fileImage = abstractFile.getImage();
+            if (fileImage != null) {
+                //not all Content objects have an image associated (e.g. LocalFiles)
+                curImageIds.add(fileImage.getId());
+            }
         } catch (TskCoreException ex) {
             logger.log(Level.SEVERE, "Error getting image id of file processed by keyword search: " + abstractFile.getName(), ex);
         }
@@ -336,16 +340,6 @@ public final class KeywordSearchIngestModule implements IngestModuleAbstractFile
         return MODULE_VERSION;
     }
 
-    @Override
-    public String getArguments() {
-        return args;
-    }
-
-    @Override
-    public void setArguments(String args) {
-        this.args = args;
-    }
-
     /**
      * Initializes the module for new ingest run Sets up threads, timers,
      * retrieves settings, keyword lists to run on
@@ -454,11 +448,6 @@ public final class KeywordSearchIngestModule implements IngestModuleAbstractFile
 
         commitTimer.start();
         searchTimer.start();
-    }
-
-    @Override
-    public ModuleType getType() {
-        return ModuleType.AbstractFile;
     }
 
     @Override

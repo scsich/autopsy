@@ -37,6 +37,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import org.sleuthkit.autopsy.corecomponents.AdvancedConfigurationDialog;
 import org.sleuthkit.autopsy.coreutils.ModuleSettings;
+import org.sleuthkit.datamodel.Content;
 
 /**
  * main configuration panel for all ingest modules, reusable JPanel component
@@ -50,6 +51,9 @@ public class IngestDialogPanel extends javax.swing.JPanel implements ListSelecti
     private ModulesTableModel tableModel;
     private String context;
     private static final Logger logger = Logger.getLogger(IngestDialogPanel.class.getName());
+
+    // The input content that's just been added to the database
+    private List<Content> inputContent;
 
     /**
      * Creates new form IngestDialogPanel

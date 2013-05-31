@@ -28,6 +28,7 @@ import static org.sleuthkit.autopsy.ingest.IngestDialogPanel.DISABLED_MOD;
 import static org.sleuthkit.autopsy.ingest.IngestDialogPanel.PARSE_UNALLOC;
 import org.sleuthkit.autopsy.ingest.IngestManager;
 import org.sleuthkit.autopsy.ingest.IngestModuleAbstract;
+import org.sleuthkit.datamodel.Content;
 import org.sleuthkit.datamodel.Image;
 
 /**
@@ -54,8 +55,16 @@ public class GeneralIngestConfigurator implements IngestConfigurator {
     }
 
     @Override
-    public void setImage(Image image) {
-        this.image = image;
+    public void setContent(List<Content> inputContent) {
+        // the inputContent should consist of only the image
+        if (inputContent.size() != 1) {
+            throw new RuntimeException("List of Content objects should contain only one Content object.");
+        }
+        if (!(inputContent.get(0) instanceof Image)) {
+            throw new RuntimeException("Expecting an Image here.");
+        }
+
+        this.image = (Image)inputContent.get(0);
     }
 
     @Override
