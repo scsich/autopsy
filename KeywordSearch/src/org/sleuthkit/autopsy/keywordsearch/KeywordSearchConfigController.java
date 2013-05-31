@@ -50,7 +50,6 @@ public class KeywordSearchConfigController implements PropertyChangeListener {
     private boolean skipKnown;
     private KeywordSearchIngestModule.UpdateFrequency UpdateFreq;
     private List<StringExtract.StringExtractUnicodeTable.SCRIPT> stringExtractScripts;
-    //private Map<String,String> stringExtractOptions;
     private EnumSet<AbstractFileExtract.ExtractOptions> stringExtractOptions;
     
     // Keyword search config data is not controlled by a single object but is

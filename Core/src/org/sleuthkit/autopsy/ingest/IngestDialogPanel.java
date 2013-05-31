@@ -41,7 +41,7 @@ import org.sleuthkit.autopsy.coreutils.ModuleSettings;
 /**
  * main configuration panel for all ingest modules, reusable JPanel component
  */
-public class IngestDialogPanel extends javax.swing.JPanel {
+public class IngestDialogPanel extends javax.swing.JPanel implements ListSelectionListener {
 
     public static final String DISABLED_MOD = "Disabled_Ingest_Modules";
     public static final String PARSE_UNALLOC = "Process_Unallocated_Space";
@@ -50,7 +50,6 @@ public class IngestDialogPanel extends javax.swing.JPanel {
     private ModulesTableModel tableModel;
     private String context;
     private static final Logger logger = Logger.getLogger(IngestDialogPanel.class.getName());
-    
 
     /**
      * Creates new form IngestDialogPanel
@@ -82,6 +81,7 @@ public class IngestDialogPanel extends javax.swing.JPanel {
         modulesTable.setModel(tableModel);
         modulesTable.setTableHeader(null);
         modulesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        modulesTable.getSelectionModel().addListSelectionListener(this);
 
         //custom renderer for tooltips
         ModulesTableRenderer renderer = new ModulesTableRenderer();
@@ -117,6 +117,7 @@ public class IngestDialogPanel extends javax.swing.JPanel {
                     advancedButton.setEnabled(currentModule.hasAdvancedConfiguration());
                 } else {
                     currentModule = null;
+                    advancedButton.setEnabled(false);
                 }
             }
         });
@@ -299,6 +300,20 @@ public class IngestDialogPanel extends javax.swing.JPanel {
     private javax.swing.JPanel simplePanel;
     private javax.swing.ButtonGroup timeGroup;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void valueChanged(ListSelectionEvent e) {
+        ListSelectionModel listSelectionModel = (ListSelectionModel) e.getSource();
+        if (listSelectionModel.isSelectionEmpty()) {
+            advancedButton.setEnabled(false);
+        } else {
+            if (currentModule == null) {
+                advancedButton.setEnabled(false);
+            } else {
+                advancedButton.setEnabled(currentModule.hasAdvancedConfiguration());
+            }
+        }
+    }
 
     private class ModulesTableModel extends AbstractTableModel {
         

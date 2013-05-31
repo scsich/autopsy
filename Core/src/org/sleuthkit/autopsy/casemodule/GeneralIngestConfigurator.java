@@ -38,11 +38,10 @@ public class GeneralIngestConfigurator implements IngestConfigurator {
     private Image image;
     private IngestManager manager;
     private IngestDialogPanel ingestDialogPanel;
-    private String moduleContext;
-    private ModuleSettings moduleSettings = new ModuleSettings(moduleContext);
+    private ModuleSettings moduleSettings;
 
     public GeneralIngestConfigurator(String moduleContext) {
-        this.moduleContext = moduleContext;
+        moduleSettings = new ModuleSettings(moduleContext);
         ingestDialogPanel = new IngestDialogPanel();
         ingestDialogPanel.setContext(moduleContext);
         manager = IngestManager.getDefault();
