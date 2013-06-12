@@ -106,7 +106,7 @@ public class ScalpelCarver {
      * @param file File to carve 
      * @param configFilePath file path to scalpel
      * configuration file with signatures, such as scalpel.conf
-     * @param outputFolder Location to save the reults to (should be in the case
+     * @param outputFolderPath Location to save the reults to (should be in the case
      * folder)
      * @return list of carved files info
      * @throws ScalpelException on errors
@@ -156,7 +156,7 @@ public class ScalpelCarver {
         File outputFile = new File(outputFolderPath, SCALPEL_OUTPUT_FILE_NAME);
         
         // parse the output
-        List<CarvedFileMeta> output = Collections.EMPTY_LIST;
+        List<CarvedFileMeta> output = Collections.<CarvedFileMeta>emptyList();
         try {
             output = ScalpelOutputParser.parse(outputFile);
         } catch (FileNotFoundException ex) {

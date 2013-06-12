@@ -350,7 +350,7 @@ public final class KeywordSearchIngestModule extends IngestModuleAbstractFile {
         
         // Note: we're using the string value associated with the initContext as
         // the configuration context
-        context = initContext.getModuleArgs();
+        context = initContext.getContextName();
         
         // validate context
         if (context == null || context.isEmpty()) {

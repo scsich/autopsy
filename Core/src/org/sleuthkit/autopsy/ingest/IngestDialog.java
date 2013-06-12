@@ -46,6 +46,7 @@ public class IngestDialog extends JDialog {
     private static Dimension DIMENSIONS = new Dimension(500, 300);
     private IngestConfigurator ingestConfigurator;
     private List<Content> inputContent = null;
+
     private IngestDialogPanel panel = null;
     
     private static final Logger logger = Logger.getLogger(IngestDialog.class.getName());
@@ -84,6 +85,7 @@ public class IngestDialog extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ingestConfigurator.start();
+
                 close();
             }
         });

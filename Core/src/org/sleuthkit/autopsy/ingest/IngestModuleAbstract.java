@@ -32,9 +32,9 @@ public abstract class IngestModuleAbstract {
      */
     public enum ModuleType {
         /**
-         * Image type module
+         * DataSource type module
          */
-        Image,  
+        DataSource,  
         
         /**
          * AbstractFile type module
@@ -94,28 +94,12 @@ public abstract class IngestModuleAbstract {
     abstract public String getDescription();
     
     /**
-     * Returns type of the module (Image-level or file-level)
+     * Returns type of the module (data source-level or file-level)
      * @return module type
      */
     abstract public ModuleType getType();
     
-    
-    /**
-     * Gets the arguments as set in XML
-     * @return arguments string
-     */
-    public String getArguments() {
-        return args;
-    }
-    
-    /**
-     * Sets the arguments from XML
-     * @param args arguments string in XML
-     */
-    public void setArguments(String a_args) {
-        args = a_args;
-    }
-    
+   
      /**
      * A module can manage and use additional threads to perform some work in the background.
      * This method provides insight to the manager if the module has truly completed its work or not.
@@ -162,13 +146,15 @@ public abstract class IngestModuleAbstract {
     public void saveAdvancedConfiguration() {}
 
     /**
-     * Returns a panel that displays the simple (run-time) configuration. 
+     * Returns a panel that displays the simple (run-time) configuration 
+     * for the given configuration context (such as pipeline instance). 
      * This is presented to the user before ingest starts and only basic
-     * settings should be given here.  use the advanced (general) configuration
+     * settings should be given here.  Use the advanced (general) configuration
      * panel for more in-depth interfaces. 
-     * The module is responsible for preserving / saving its configuration state
-     * In addition, saveSimpleConfiguration() can be used
+     * The module (or its configuration controller object) is responsible for preserving / saving its configuration state
+     * In addition, saveSimpleConfiguration() can be used as the trigger.
      * 
+     * @param context the configuration context to use in the panel
      * @return JPanel containing basic configuration widgets or null if simple configuration is not available
      */
     public javax.swing.JPanel getSimpleConfiguration(String context) {
@@ -176,10 +162,15 @@ public abstract class IngestModuleAbstract {
     }
     
      /**
-     * Implements advanced module conf  iguration exposed to the user before ingest starts
-     * The module is responsible for preserving / saving its configuration state
-     * In addition, saveAdvancedConfiguration() can be used
+     * Returns a panel that displays the advanced (run-time) configuration 
+     * for the given configuration context (such as pipeline instance). 
+     * Implements advanced module configuration exposed to the user before ingest starts.
      * 
+     * The module (or its configuration controller object) 
+     * is responsible for preserving / saving its configuration state
+     * In addition, saveAdvancedConfiguration() can be used as the trigger.
+     * 
+     * @param context the configuration context to use in the panel
      * @return JPanel containing advanced configuration widgets or null if advanced configuration is not available
      */
     public javax.swing.JPanel getAdvancedConfiguration(String context) {
