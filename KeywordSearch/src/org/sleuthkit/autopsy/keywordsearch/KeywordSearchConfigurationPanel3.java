@@ -43,11 +43,14 @@ public class KeywordSearchConfigurationPanel3 extends javax.swing.JPanel impleme
     private final Map<String, StringExtract.StringExtractUnicodeTable.SCRIPT> scripts = new HashMap<String, StringExtract.StringExtractUnicodeTable.SCRIPT>();
     private ActionListener updateLanguagesAction;
     private List<SCRIPT> toUpdate;
+    private KeywordSearchConfigController controller;
 
-    /**
-     * Creates new form KeywordSearchConfigurationPanel3
-     */
     public KeywordSearchConfigurationPanel3() {
+        this(new KeywordSearchConfigController());
+    }
+
+    public KeywordSearchConfigurationPanel3(KeywordSearchConfigController controller) {
+        this.controller = controller;
         initComponents();
         customizeComponents();
     }
@@ -59,8 +62,12 @@ public class KeywordSearchConfigurationPanel3 extends javax.swing.JPanel impleme
         return instance;
     }
 
-    private void customizeComponents() {
+    public void setController(KeywordSearchConfigController controller) {
+        this.controller = controller;
+        load();
+    }
 
+    private void customizeComponents() {
 
         updateLanguagesAction = new ActionListener() {
             @Override
@@ -113,16 +120,16 @@ public class KeywordSearchConfigurationPanel3 extends javax.swing.JPanel impleme
 
     private void reloadScriptsCheckBoxes() {
        
-        boolean utf16 = 
-                Boolean.parseBoolean(KeywordSearchSettings.getStringExtractOption(AbstractFileExtract.ExtractOptions.EXTRACT_UTF16.toString()));
+        boolean utf16 = controller.isStringExtractOptionSet(
+                AbstractFileExtract.ExtractOptions.EXTRACT_UTF16);
        
         enableUTF16Checkbox.setSelected(utf16);
         
-        boolean utf8 = 
-                Boolean.parseBoolean(KeywordSearchSettings.getStringExtractOption(AbstractFileExtract.ExtractOptions.EXTRACT_UTF8.toString()));
+        boolean utf8 = controller.isStringExtractOptionSet(
+                AbstractFileExtract.ExtractOptions.EXTRACT_UTF8);
         enableUTF8Checkbox.setSelected(utf8);
         
-        final List<SCRIPT> serviceScripts = KeywordSearchSettings.getStringExtractScripts();
+        final List<SCRIPT> serviceScripts = controller.getStringExtractScripts();
         final int components = checkPanel.getComponentCount();
         
         for (int i = 0; i < components; ++i) {
@@ -132,25 +139,23 @@ public class KeywordSearchConfigurationPanel3 extends javax.swing.JPanel impleme
             
             ch.setSelected(serviceScripts.contains(script));
         }
-        
     }
 
     private void activateWidgets() {
         reloadScriptsCheckBoxes();
-        
-        
-         boolean utf16 = 
-                Boolean.parseBoolean(KeywordSearchSettings.getStringExtractOption(AbstractFileExtract.ExtractOptions.EXTRACT_UTF16.toString()));
-       
+
+        boolean utf16 = controller.isStringExtractOptionSet(
+                AbstractFileExtract.ExtractOptions.EXTRACT_UTF16);
+
         enableUTF16Checkbox.setSelected(utf16);
-        
-        boolean utf8 = 
-                Boolean.parseBoolean(KeywordSearchSettings.getStringExtractOption(AbstractFileExtract.ExtractOptions.EXTRACT_UTF8.toString()));
+
+        boolean utf8 = controller.isStringExtractOptionSet(
+                AbstractFileExtract.ExtractOptions.EXTRACT_UTF8);
         enableUTF8Checkbox.setSelected(utf8);
         final boolean extractEnabled = utf16 || utf8;
-        
+
         boolean ingestNotRunning = !IngestManager.getDefault().isIngestRunning()
-        && ! IngestManager.getDefault().isModuleRunning(KeywordSearchIngestModule.getDefault());
+                && !IngestManager.getDefault().isModuleRunning(KeywordSearchIngestModule.getDefault());
         //enable / disable checboxes
         activateScriptsCheckboxes(extractEnabled && ingestNotRunning);
         enableUTF16Checkbox.setEnabled(ingestNotRunning);
@@ -269,13 +274,13 @@ public class KeywordSearchConfigurationPanel3 extends javax.swing.JPanel impleme
 
     @Override
     public void store() {
-        KeywordSearchSettings.setStringExtractOption(AbstractFileExtract.ExtractOptions.EXTRACT_UTF8.toString(),
-                Boolean.toString(enableUTF8Checkbox.isSelected()));
-        KeywordSearchSettings.setStringExtractOption(AbstractFileExtract.ExtractOptions.EXTRACT_UTF16.toString(),
-                Boolean.toString(enableUTF16Checkbox.isSelected()));
+        controller.setStringExtractOption(AbstractFileExtract.ExtractOptions.EXTRACT_UTF8,
+                enableUTF8Checkbox.isSelected());
+        controller.setStringExtractOption(AbstractFileExtract.ExtractOptions.EXTRACT_UTF16,
+                enableUTF16Checkbox.isSelected());
         
-        if(toUpdate!=null) {
-           KeywordSearchSettings.setStringExtractScripts(toUpdate);
+        if(toUpdate != null) {
+           controller.setStringExtractScripts(toUpdate);
         }
         
     }
@@ -283,6 +288,5 @@ public class KeywordSearchConfigurationPanel3 extends javax.swing.JPanel impleme
     @Override
     public void load() {
         activateWidgets();
-  
     }
 }

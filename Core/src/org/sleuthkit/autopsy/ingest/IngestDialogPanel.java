@@ -36,25 +36,37 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import org.sleuthkit.autopsy.corecomponents.AdvancedConfigurationDialog;
+import org.sleuthkit.autopsy.coreutils.ModuleSettings;
+import org.sleuthkit.datamodel.Content;
 
 /**
  * main configuration panel for all ingest modules, reusable JPanel component
  */
-public class IngestDialogPanel extends javax.swing.JPanel {
+public class IngestDialogPanel extends javax.swing.JPanel implements ListSelectionListener {
 
-    private IngestModuleAbstract currentModule;
-    private ModulesTableModel tableModel;
-    private static final Logger logger = Logger.getLogger(IngestDialogPanel.class.getName());
     public static final String DISABLED_MOD = "Disabled_Ingest_Modules";
     public static final String PARSE_UNALLOC = "Process_Unallocated_Space";
+    
+    private IngestModuleAbstract currentModule;
+    private ModulesTableModel tableModel;
+    private String context;
+    private static final Logger logger = Logger.getLogger(IngestDialogPanel.class.getName());
+
+    // The input content that's just been added to the database
+    private List<Content> inputContent;
 
     /**
      * Creates new form IngestDialogPanel
      */
     public IngestDialogPanel() {
         tableModel = new ModulesTableModel();
+        context = ModuleSettings.DEFAULT_CONTEXT;
         initComponents();
         customizeComponents();
+    }
+
+    public void setContext(String context) {
+        this.context = context;
     }
 
     public IngestModuleAbstract getCurrentIngestModule() {
@@ -73,6 +85,7 @@ public class IngestDialogPanel extends javax.swing.JPanel {
         modulesTable.setModel(tableModel);
         modulesTable.setTableHeader(null);
         modulesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        modulesTable.getSelectionModel().addListSelectionListener(this);
 
         //custom renderer for tooltips
         ModulesTableRenderer renderer = new ModulesTableRenderer();
@@ -101,13 +114,14 @@ public class IngestDialogPanel extends javax.swing.JPanel {
                     // add the module-specific configuration panel, if there is one
                     simplePanel.removeAll();
                     if (currentModule.hasSimpleConfiguration()) {
-                        simplePanel.add(currentModule.getSimpleConfiguration());
+                        simplePanel.add(currentModule.getSimpleConfiguration(context));
                     }
                     simplePanel.revalidate();
                     simplePanel.repaint();
                     advancedButton.setEnabled(currentModule.hasAdvancedConfiguration());
                 } else {
                     currentModule = null;
+                    advancedButton.setEnabled(false);
                 }
             }
         });
@@ -271,7 +285,7 @@ public class IngestDialogPanel extends javax.swing.JPanel {
                 dialog.close();
             }
         });
-        dialog.display(currentModule.getAdvancedConfiguration());
+        dialog.display(currentModule.getAdvancedConfiguration(context));
     }//GEN-LAST:event_advancedButtonActionPerformed
 
     private void processUnallocCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_processUnallocCheckboxActionPerformed
@@ -290,6 +304,20 @@ public class IngestDialogPanel extends javax.swing.JPanel {
     private javax.swing.JPanel simplePanel;
     private javax.swing.ButtonGroup timeGroup;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void valueChanged(ListSelectionEvent e) {
+        ListSelectionModel listSelectionModel = (ListSelectionModel) e.getSource();
+        if (listSelectionModel.isSelectionEmpty()) {
+            advancedButton.setEnabled(false);
+        } else {
+            if (currentModule == null) {
+                advancedButton.setEnabled(false);
+            } else {
+                advancedButton.setEnabled(currentModule.hasAdvancedConfiguration());
+            }
+        }
+    }
 
     private class ModulesTableModel extends AbstractTableModel {
         

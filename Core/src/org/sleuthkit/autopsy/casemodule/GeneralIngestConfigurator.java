@@ -28,6 +28,7 @@ import static org.sleuthkit.autopsy.ingest.IngestDialogPanel.DISABLED_MOD;
 import static org.sleuthkit.autopsy.ingest.IngestDialogPanel.PARSE_UNALLOC;
 import org.sleuthkit.autopsy.ingest.IngestManager;
 import org.sleuthkit.autopsy.ingest.IngestModuleAbstract;
+import org.sleuthkit.datamodel.Content;
 import org.sleuthkit.datamodel.Image;
 
 /**
@@ -38,11 +39,12 @@ public class GeneralIngestConfigurator implements IngestConfigurator {
     private Image image;
     private IngestManager manager;
     private IngestDialogPanel ingestDialogPanel;
-    private String moduleContext;
+    private ModuleSettings moduleSettings;
 
     public GeneralIngestConfigurator(String moduleContext) {
-        this.moduleContext = moduleContext;
+        moduleSettings = new ModuleSettings(moduleContext);
         ingestDialogPanel = new IngestDialogPanel();
+        ingestDialogPanel.setContext(moduleContext);
         manager = IngestManager.getDefault();
         reload();
     }
@@ -53,8 +55,16 @@ public class GeneralIngestConfigurator implements IngestConfigurator {
     }
 
     @Override
-    public void setImage(Image image) {
-        this.image = image;
+    public void setContent(List<Content> inputContent) {
+        // the inputContent should consist of only the image
+        if (inputContent.size() != 1) {
+            throw new RuntimeException("List of Content objects should contain only one Content object.");
+        }
+        if (!(inputContent.get(0) instanceof Image)) {
+            throw new RuntimeException("Expecting an Image here.");
+        }
+
+        this.image = (Image)inputContent.get(0);
     }
 
     @Override
@@ -87,9 +97,9 @@ public class GeneralIngestConfigurator implements IngestConfigurator {
         // create a csv list
         String disabledModulesCsv = moduleListToCsv(disabledModules);
         
-        ModuleSettings.setConfigSetting(moduleContext, DISABLED_MOD, disabledModulesCsv);
+        moduleSettings.setConfigSetting(DISABLED_MOD, disabledModulesCsv);
         String processUnalloc = Boolean.toString(ingestDialogPanel.processUnallocSpaceEnabled());
-        ModuleSettings.setConfigSetting(moduleContext, PARSE_UNALLOC, processUnalloc);
+        moduleSettings.setConfigSetting(PARSE_UNALLOC, processUnalloc);
     }
     
     public static String moduleListToCsv(List<IngestModuleAbstract> lst) {
@@ -134,7 +144,7 @@ public class GeneralIngestConfigurator implements IngestConfigurator {
     public void reload() {
         
         // get the csv list of disabled modules
-        String disabledModulesCsv = ModuleSettings.getConfigSetting(moduleContext, DISABLED_MOD);
+        String disabledModulesCsv = moduleSettings.getConfigSetting(DISABLED_MOD);
         
         // create a list of modules from it
         List<IngestModuleAbstract> disabledModules = csvToModuleList(disabledModulesCsv);
@@ -142,7 +152,7 @@ public class GeneralIngestConfigurator implements IngestConfigurator {
         // tell th ingestDialogPanel to unselect these modules
         ingestDialogPanel.setDisabledModules(disabledModules);
         
-        boolean processUnalloc = Boolean.parseBoolean(ModuleSettings.getConfigSetting(moduleContext, PARSE_UNALLOC));
+        boolean processUnalloc = Boolean.parseBoolean(moduleSettings.getConfigSetting(PARSE_UNALLOC));
         ingestDialogPanel.setProcessUnallocSpaceEnabled(processUnalloc);
     }
 

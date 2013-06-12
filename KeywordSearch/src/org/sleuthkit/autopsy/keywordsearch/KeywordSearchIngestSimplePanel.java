@@ -17,9 +17,10 @@
  * limitations under the License.
  */
 
-
 package org.sleuthkit.autopsy.keywordsearch;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JTable;
@@ -27,26 +28,35 @@ import org.sleuthkit.autopsy.coreutils.Logger;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
-import org.sleuthkit.autopsy.coreutils.ModuleSettings;
+import org.sleuthkit.autopsy.corecomponents.OptionsPanel;
 import org.sleuthkit.autopsy.coreutils.StringExtract.StringExtractUnicodeTable.SCRIPT;
 
 /**
  * Simple ingest config panel
  */
-public class KeywordSearchIngestSimplePanel extends javax.swing.JPanel {
+public class KeywordSearchIngestSimplePanel extends javax.swing.JPanel implements OptionsPanel, PropertyChangeListener {
     
     private final static Logger logger = Logger.getLogger(KeywordSearchIngestSimplePanel.class.getName());
     public static final String PROP_OPTIONS = "Keyword Search_Options";
-    private KeywordTableModel tableModel;
-    private List<KeywordSearchListsAbstract.KeywordSearchList> lists;
+    private KeywordListTableModel tableModel;
+    private KeywordSearchConfigController controller;
 
     /** Creates new form KeywordSearchIngestSimplePanel */
     public KeywordSearchIngestSimplePanel() {
-        tableModel = new KeywordTableModel();
-        lists = new ArrayList<KeywordSearchListsAbstract.KeywordSearchList>();
-        reloadLists();
+        this(new KeywordSearchConfigController());
+    }
+    
+    public KeywordSearchIngestSimplePanel(KeywordSearchConfigController controller) {
+        tableModel = new KeywordListTableModel();
+        setController(controller);
         initComponents();
         customizeComponents();
+    }
+
+    public final void setController(KeywordSearchConfigController controller) {
+        this.controller = controller;
+        tableModel.setController(controller);
+        controller.addPropertyChangeListener(this);
     }
     
     private void customizeComponents() {
@@ -122,25 +132,20 @@ public class KeywordSearchIngestSimplePanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(listsScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                        .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(languagesLabel)
+                    .addComponent(titleLabel)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addComponent(languagesValLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(10, 10, 10))
-                    .addComponent(languagesLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(encodingsLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(keywordSearchEncodings))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(titleLabel)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(encodingsLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(keywordSearchEncodings)))
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                            .addComponent(listsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(languagesValLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -148,12 +153,12 @@ public class KeywordSearchIngestSimplePanel extends javax.swing.JPanel {
                 .addGap(7, 7, 7)
                 .addComponent(titleLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(listsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
+                .addComponent(listsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(languagesLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(13, 13, 13)
                 .addComponent(languagesValLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(encodingsLabel)
                     .addComponent(keywordSearchEncodings))
@@ -173,7 +178,7 @@ public class KeywordSearchIngestSimplePanel extends javax.swing.JPanel {
 
     private void reloadLangs() {
         //TODO multiple
-        List<SCRIPT> scripts = KeywordSearchSettings.getStringExtractScripts();
+        List<SCRIPT> scripts = controller.getStringExtractScripts();
         StringBuilder langs = new StringBuilder();
         langs.append("<html>");
         for(int i=0; i<scripts.size(); i++) {
@@ -189,13 +194,14 @@ public class KeywordSearchIngestSimplePanel extends javax.swing.JPanel {
     }
     
     private void reloadEncodings() {
-        String utf8 = KeywordSearchSettings.getStringExtractOption(AbstractFileExtract.ExtractOptions.EXTRACT_UTF8.toString());
-        String utf16 = KeywordSearchSettings.getStringExtractOption(AbstractFileExtract.ExtractOptions.EXTRACT_UTF16.toString());
+        boolean utf8 = controller.isStringExtractOptionSet(AbstractFileExtract.ExtractOptions.EXTRACT_UTF8);
+        boolean utf16 = controller.isStringExtractOptionSet(AbstractFileExtract.ExtractOptions.EXTRACT_UTF16);
+
         ArrayList<String> encodingsList = new ArrayList<String>();
-        if(utf8==null || Boolean.parseBoolean(utf8)) {
+        if (utf8) {
             encodingsList.add("UTF8");
         }
-        if(utf16==null || Boolean.parseBoolean(utf16)) {
+        if (utf16) {
             encodingsList.add("UTF16");
         }
         String encodings = encodingsList.toString();
@@ -203,16 +209,42 @@ public class KeywordSearchIngestSimplePanel extends javax.swing.JPanel {
         keywordSearchEncodings.setText(encodings);
     }
     
-    private void reloadLists() {
-        lists.clear();
-        lists.addAll(KeywordSearchListsXML.getCurrent().getListsL());
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        String propName = evt.getPropertyName();
+        if (propName.equals(KeywordSearchConfigController.KEYWORD_LISTS)) {
+            tableModel.fireTableDataChanged();
+        } else if (propName.equals(KeywordSearchConfigController.SCRIPTS)) {
+            reloadLangs();
+        } else if (propName.equals(KeywordSearchConfigController.STRING_EXTRACT_OPTIONS)) {
+            reloadEncodings();
+        }
     }
 
-    private class KeywordTableModel extends AbstractTableModel {
+    @Override
+    public void store() {
+        // simple panel does not need to save anything; already saved in controller
+    }
+
+    @Override
+    public void load() {
+        reloadLangs();
+        reloadEncodings();
+        tableModel.fireTableDataChanged();
+    }
+
+    private class KeywordListTableModel extends AbstractTableModel implements PropertyChangeListener {
+        
+        private KeywordSearchConfigController controller;
+        
+        public void setController(KeywordSearchConfigController controller){
+            this.controller = controller;
+            fireTableDataChanged();
+        }
 
         @Override
         public int getRowCount() {
-            return KeywordSearchIngestSimplePanel.this.lists.size();
+            return controller.getKeywordSearchListNames().size();
         }
 
         @Override
@@ -222,12 +254,9 @@ public class KeywordSearchIngestSimplePanel extends javax.swing.JPanel {
 
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
-            KeywordSearchListsAbstract.KeywordSearchList list = KeywordSearchIngestSimplePanel.this.lists.get(rowIndex);
-            if(columnIndex == 0) {
-                return list.getUseForIngest();
-            } else {
-                return list.getName();
-            }
+            KeywordSearchListsAbstract.KeywordSearchList list = controller.getKeywordSearchLists().get(rowIndex);
+            Object obj = (columnIndex == 0) ? list.getUseForIngest() : list.getName();
+            return obj;
         }
         
         @Override
@@ -238,17 +267,23 @@ public class KeywordSearchIngestSimplePanel extends javax.swing.JPanel {
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
             
-            KeywordSearchListsAbstract.KeywordSearchList list = KeywordSearchIngestSimplePanel.this.lists.get(rowIndex);
-            if(columnIndex == 0){
-                KeywordSearchListsXML loader = KeywordSearchListsXML.getCurrent();
-                loader.addList(list.getName(), list.getKeywords(), (Boolean) aValue, false);
-                reloadLists();
+            if (columnIndex != 0) {
+                return;
             }
+            
+            KeywordSearchListsAbstract.KeywordSearchList list = controller.getKeywordSearchLists().get(rowIndex);
+
+            list.setUseForIngest(((Boolean)aValue).booleanValue());
         }
         
         @Override
         public Class<?> getColumnClass(int c) {
             return getValueAt(0, c).getClass();
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            fireTableDataChanged();
         }
         
     }

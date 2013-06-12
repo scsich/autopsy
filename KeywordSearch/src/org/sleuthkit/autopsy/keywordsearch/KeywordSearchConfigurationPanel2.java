@@ -22,7 +22,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import org.sleuthkit.autopsy.coreutils.Logger;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.sleuthkit.autopsy.corecomponents.OptionsPanel;
 import org.sleuthkit.autopsy.ingest.IngestManager;
 import org.sleuthkit.autopsy.keywordsearch.KeywordSearchIngestModule.UpdateFrequency;
@@ -33,23 +32,27 @@ import org.sleuthkit.autopsy.keywordsearch.KeywordSearchIngestModule.UpdateFrequ
 public class KeywordSearchConfigurationPanel2 extends javax.swing.JPanel implements OptionsPanel {
 
     private final Logger logger = Logger.getLogger(KeywordSearchConfigurationPanel2.class.getName());
+    
+    private KeywordSearchConfigController controller;
 
-    /**
-     * Creates new form KeywordSearchConfigurationPanel2
-     */
-    KeywordSearchConfigurationPanel2() {
+    public KeywordSearchConfigurationPanel2() {
+        this(new KeywordSearchConfigController());
+    }
+
+    public KeywordSearchConfigurationPanel2(KeywordSearchConfigController controller) {
+        this.controller = controller;
         initComponents();
         customizeComponents();
     }
 
     private void activateWidgets() {
-        skipNSRLCheckBox.setSelected(KeywordSearchSettings.getSkipKnown());
+        skipNSRLCheckBox.setSelected(controller.isSkipKnown());
         boolean enable = !IngestManager.getDefault().isIngestRunning()
                 && !IngestManager.getDefault().isModuleRunning(KeywordSearchIngestModule.getDefault());
         skipNSRLCheckBox.setEnabled(enable);
         setTimeSettingEnabled(enable);
 
-        final UpdateFrequency curFreq = KeywordSearchSettings.getUpdateFrequency();
+        final UpdateFrequency curFreq = controller.getUpdateFreq();
         switch (curFreq) {
             case FAST:
                 timeRadioButton1.setSelected(true);
@@ -63,7 +66,11 @@ public class KeywordSearchConfigurationPanel2 extends javax.swing.JPanel impleme
             default:
             //
         }
+    }
 
+    public void setController(KeywordSearchConfigController controller) {
+        this.controller = controller;
+        load();
     }
 
     /**
@@ -205,8 +212,8 @@ public class KeywordSearchConfigurationPanel2 extends javax.swing.JPanel impleme
 
     @Override
     public void store() {
-        KeywordSearchSettings.setSkipKnown(skipNSRLCheckBox.isSelected());
-        KeywordSearchSettings.setUpdateFrequency(getSelectedTimeValue());
+        controller.setSkipKnown(skipNSRLCheckBox.isSelected());
+        controller.setUpdateFreq(getSelectedTimeValue());
     }
 
     @Override
@@ -220,7 +227,6 @@ public class KeywordSearchConfigurationPanel2 extends javax.swing.JPanel impleme
         timeRadioButton3.setEnabled(enabled);
         frequencyLabel.setEnabled(enabled);
     }
-
 
     private UpdateFrequency getSelectedTimeValue() {
         if (timeRadioButton1.isSelected()) {
@@ -238,41 +244,37 @@ public class KeywordSearchConfigurationPanel2 extends javax.swing.JPanel impleme
         timeGroup.add(timeRadioButton2);
         timeGroup.add(timeRadioButton3);
 
-        this.skipNSRLCheckBox.setSelected(KeywordSearchSettings.getSkipKnown());
+        this.skipNSRLCheckBox.setSelected(controller.isSkipKnown());
 
         try {
             filesIndexedValue.setText(Integer.toString(KeywordSearch.getServer().queryNumIndexedFiles()));
             chunksValLabel.setText(Integer.toString(KeywordSearch.getServer().queryNumIndexedChunks()));
         } catch (KeywordSearchModuleException ex) {
             logger.log(Level.WARNING, "Could not get number of indexed files/chunks");
-
         } catch (NoOpenCoreException ex) {
             logger.log(Level.WARNING, "Could not get number of indexed files/chunks");
         }
 
         KeywordSearch.addNumIndexedFilesChangeListener(
                 new PropertyChangeListener() {
-                    @Override
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        String changed = evt.getPropertyName();
-                        Object newValue = evt.getNewValue();
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                String changed = evt.getPropertyName();
+                Object newValue = evt.getNewValue();
 
-                        if (changed.equals(KeywordSearch.NUM_FILES_CHANGE_EVT)) {
-                            int newFilesIndexed = ((Integer) newValue).intValue();
-                            filesIndexedValue.setText(Integer.toString(newFilesIndexed));
-                            try {
-                                chunksValLabel.setText(Integer.toString(KeywordSearch.getServer().queryNumIndexedChunks()));
-                            } catch (KeywordSearchModuleException ex) {
-                                logger.log(Level.WARNING, "Could not get number of indexed chunks");
+                if (changed.equals(KeywordSearch.NUM_FILES_CHANGE_EVT)) {
+                    int newFilesIndexed = ((Integer) newValue).intValue();
+                    filesIndexedValue.setText(Integer.toString(newFilesIndexed));
+                    try {
+                        chunksValLabel.setText(Integer.toString(KeywordSearch.getServer().queryNumIndexedChunks()));
+                    } catch (KeywordSearchModuleException ex) {
+                        logger.log(Level.WARNING, "Could not get number of indexed chunks");
 
-                            } catch (NoOpenCoreException ex) {
-                                logger.log(Level.WARNING, "Could not get number of indexed chunks");
-                            }
-
-                        }
+                    } catch (NoOpenCoreException ex) {
+                        logger.log(Level.WARNING, "Could not get number of indexed chunks");
                     }
-                });
-
-
+                }
+            }
+        });
     }
 }

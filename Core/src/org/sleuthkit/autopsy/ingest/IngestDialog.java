@@ -25,6 +25,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.List;
 import org.sleuthkit.autopsy.coreutils.Logger;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -33,24 +34,25 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import org.sleuthkit.autopsy.casemodule.GeneralIngestConfigurator;
 import org.sleuthkit.autopsy.casemodule.IngestConfigurator;
-import org.sleuthkit.datamodel.Image;
+import org.sleuthkit.autopsy.coreutils.ModuleSettings;
+import org.sleuthkit.datamodel.Content;
 
 /**
  * IngestDialog shown on Case.CASE_ADD_IMAGE property change
  */
 public class IngestDialog extends JDialog {
     
-    private static final String MODULE_CONTEXT = "MainIngest";
-    
     private static final String TITLE = "Ingest Modules";
     private static Dimension DIMENSIONS = new Dimension(500, 300);
     private IngestConfigurator ingestConfigurator;
+    private List<Content> inputContent = null;
+    private IngestDialogPanel panel = null;
     
     private static final Logger logger = Logger.getLogger(IngestDialog.class.getName());
 
     public IngestDialog(JFrame frame, String title, boolean modal) {
         super(frame, title, modal);
-        ingestConfigurator = new GeneralIngestConfigurator(MODULE_CONTEXT);
+        ingestConfigurator = new GeneralIngestConfigurator(ModuleSettings.DEFAULT_CONTEXT);
         ingestConfigurator.reload();
     }
     
@@ -114,8 +116,8 @@ public class IngestDialog extends JDialog {
         setVisible(true);
     }
     
-    public void setImage(Image image) {
-        ingestConfigurator.setImage(image);
+    public void setContent(List<Content> content) {
+        ingestConfigurator.setContent(content);
     }
 
     /**

@@ -51,7 +51,7 @@ public class ExtractedContentViewer implements DataContentViewer {
 
     private static final Logger logger = Logger.getLogger(ExtractedContentViewer.class.getName());
     private ExtractedContentPanel panel;
-    private Node currentNode = null;
+    private volatile Node currentNode = null;
     private MarkupSource currentSource = null;
     private final IsDirVisitor isDirVisitor = new IsDirVisitor();
     //keep last content cached
@@ -65,8 +65,6 @@ public class ExtractedContentViewer implements DataContentViewer {
 
     @Override
     public void setNode(final Node selectedNode) {
-        //TODO why setNode() is called twice for the same node each time
-
         // to clear the viewer
         if (selectedNode == null) {
             currentNode = null;
@@ -74,7 +72,14 @@ public class ExtractedContentViewer implements DataContentViewer {
             return;
         }
 
-        this.currentNode = selectedNode;
+        //TODO why setNode() is called twice for the same node sometimes (when selected in dir tree first)
+        //for now, do not update second time
+        if (selectedNode == currentNode) {
+            return;
+        }
+        else {
+            currentNode = selectedNode;
+        }
 
         // sources are custom markup from the node (if available) and default
         // markup is fetched from solr
@@ -415,7 +420,7 @@ public class ExtractedContentViewer implements DataContentViewer {
             if (contentObj instanceof AbstractFile) { 
                 //we know it's AbstractFile, but do quick check to make sure if we index other objects in future
                 boolean isKnown = FileKnown.KNOWN.equals(((AbstractFile)contentObj).getKnown());
-                if (isKnown && KeywordSearchSettings.getSkipKnown()) {
+                if (isKnown && new KeywordSearchSettings().getSkipKnown()) {
                     msg += "<p style='font-style:italic'>It is a 'known' file and the current settings opt to skip indexing 'known' files during ingest. </p>";
                 }
                 

@@ -176,7 +176,7 @@ public class IngestServices {
      * @return setting value for the module / setting name, or null if not found
      */
     public String getConfigSetting(String moduleName, String settingName) {
-        return ModuleSettings.getConfigSetting(moduleName, settingName);
+        return new ModuleSettings(moduleName).getConfigSetting(settingName);
     }
     
     /**
@@ -186,7 +186,7 @@ public class IngestServices {
      * @param settingVal setting value to set
      */
     public void setConfigSetting(String moduleName, String settingName, String settingVal) {
-        ModuleSettings.setConfigSetting(moduleName, settingName, settingVal);
+        new ModuleSettings(moduleName).setConfigSetting(settingName, settingVal);
     }
     
     /**
@@ -195,7 +195,7 @@ public class IngestServices {
      * @return settings for the module / setting name
      */
     public Map<String,String> getConfigSettings(String moduleName) {
-        return ModuleSettings.getConfigSettings(moduleName);
+        return new ModuleSettings(moduleName).getConfigSettings();
     }
     
    /**
@@ -206,7 +206,7 @@ public class IngestServices {
      * 
      */
     public void setConfigSettings(String moduleName, Map<String,String>settings) {
-        ModuleSettings.setConfigSettings(moduleName, settings);
+        new ModuleSettings(moduleName).setConfigSettings(settings);
     }
     
     

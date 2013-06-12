@@ -22,6 +22,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -46,48 +47,37 @@ public abstract class KeywordSearchListsAbstract {
 
     public KeywordSearchListsAbstract(String filePath) {
         this.filePath = filePath;
-        theLists = new LinkedHashMap<String, KeywordSearchList>();
-        lockedLists = new ArrayList<String>();
+        theLists = new LinkedHashMap<>();
+        lockedLists = new ArrayList<>();
         changeSupport = new PropertyChangeSupport(this);
+        prepopulateLists();
     }
 
     //property support
     public enum ListsEvt {
-
         LIST_ADDED, LIST_DELETED, LIST_UPDATED
     };
-
-    /**
-     * get instance for managing the current keyword list of the application
-     */
-    public static KeywordSearchListsXML getCurrent() {
-        if (currentInstance == null) {
-            currentInstance = new KeywordSearchListsXML(CUR_LISTS_FILE);
-            currentInstance.reload();
-        }
-        return currentInstance;
-    }
 
     void addPropertyChangeListener(PropertyChangeListener l) {
         changeSupport.addPropertyChangeListener(l);
     }
 
     private void prepopulateLists() {
-        if (! theLists.isEmpty()) {
+        if (!theLists.isEmpty()) {
             return;
         }
         //phone number
-        List<Keyword> phones = new ArrayList<Keyword>();
+        List<Keyword> phones = new ArrayList<>();
         phones.add(new Keyword("[(]{0,1}\\d\\d\\d[)]{0,1}[\\.-]\\d\\d\\d[\\.-]\\d\\d\\d\\d", false, BlackboardAttribute.ATTRIBUTE_TYPE.TSK_PHONE_NUMBER));
         //phones.add(new Keyword("\\d{8,10}", false));
         //IP address
-        List<Keyword> ips = new ArrayList<Keyword>();
+        List<Keyword> ips = new ArrayList<>();
         ips.add(new Keyword("(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])", false, BlackboardAttribute.ATTRIBUTE_TYPE.TSK_IP_ADDRESS));
         //email
-        List<Keyword> emails = new ArrayList<Keyword>();
+        List<Keyword> emails = new ArrayList<>();
         emails.add(new Keyword("[A-Z0-9._%-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}", false, BlackboardAttribute.ATTRIBUTE_TYPE.TSK_EMAIL));
         //URL
-        List<Keyword> urls = new ArrayList<Keyword>();
+        List<Keyword> urls = new ArrayList<>();
         //urls.add(new Keyword("http://|https://|^www\\.", false, BlackboardAttribute.ATTRIBUTE_TYPE.TSK_URL));
         urls.add(new Keyword("((((ht|f)tp(s?))\\://)|www\\.)[a-zA-Z0-9\\-\\.]+\\.([a-zA-Z]{2,5})(\\:[0-9]+)*(/($|[a-zA-Z0-9\\.\\,\\;\\?\\'\\\\+&amp;%\\$#\\=~_\\-]+))*", false, BlackboardAttribute.ATTRIBUTE_TYPE.TSK_URL));
 
@@ -146,8 +136,6 @@ public abstract class KeywordSearchListsAbstract {
             //create new if failed to load
             save();
         }
-
-
     }
 
     public List<KeywordSearchList> getListsL() {
@@ -161,7 +149,7 @@ public abstract class KeywordSearchListsAbstract {
     public List<KeywordSearchList> getListsL(boolean locked) {
         List<KeywordSearchList> ret = new ArrayList<KeywordSearchList>();
         for (KeywordSearchList list : theLists.values()) {
-            if (list.isLocked().equals(locked)) {
+            if (list.isLocked() == locked) {
                 ret.add(list);
             }
         }
@@ -291,15 +279,9 @@ public abstract class KeywordSearchListsAbstract {
 
         if (curList == null) {
             theLists.put(name, new KeywordSearchList(name, now, now, useForIngest, ingestMessages, newList, locked));
-//            if (!locked) {
-//                save();
-//            }
             changeSupport.firePropertyChange(ListsEvt.LIST_ADDED.toString(), null, name);
         } else {
             theLists.put(name, new KeywordSearchList(name, curList.getDateCreated(), now, useForIngest, ingestMessages, newList, locked));
-//            if (!locked) {
-//                save();
-//            }
             replaced = true;
             changeSupport.firePropertyChange(ListsEvt.LIST_UPDATED.toString(), null, name);
         }
@@ -396,11 +378,9 @@ public abstract class KeywordSearchListsAbstract {
         KeywordSearchList delList = getList(name);
         if (delList != null && !delList.isLocked()) {
             theLists.remove(name);
-            //deleted = save();
         }
         changeSupport.firePropertyChange(ListsEvt.LIST_DELETED.toString(), null, name);
         return true;
-
     }
 
     /**
@@ -425,14 +405,17 @@ public abstract class KeywordSearchListsAbstract {
         return f.exists() && f.canRead() && f.canWrite();
     }
     
-    public void setUseForIngest(String key, boolean flag)
-    {
+    public void setUseForIngest(String key, boolean flag) {
         theLists.get(key).setUseForIngest(flag);
     }
     /**
      * a representation of a single keyword list created or loaded
      */
-    public class KeywordSearchList {
+    public static class KeywordSearchList {
+        
+        public static final String KEYWORDS_CHANGED = "keywords_changed";
+        public static final String USE_FOR_INGEST_CHANGED = "use_for_ingest_changed";
+        public static final String SEND_MESSAGE_CHANGED = "send_message_changed";
 
         private String name;
         private Date created;
@@ -441,6 +424,37 @@ public abstract class KeywordSearchListsAbstract {
         private Boolean ingestMessages;
         private List<Keyword> keywords;
         private Boolean locked;
+        private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        
+        KeywordSearchList(String name) {
+            final Date now = new Date();
+            boolean useForIngest = false;
+            boolean sendMessages = true;
+            boolean locked = false;
+            
+            this.name = name;
+            this.created = now;
+            this.modified = now;
+            this.useForIngest = useForIngest;
+            this.ingestMessages = sendMessages;
+            this.keywords = new ArrayList<>();
+            this.locked = locked;
+        }
+        
+        KeywordSearchList(String name, List<Keyword> keywords) {
+            final Date now = new Date();
+            boolean useForIngest = false;
+            boolean sendMessages = true;
+            boolean locked = false;
+            
+            this.name = name;
+            this.created = now;
+            this.modified = now;
+            this.useForIngest = useForIngest;
+            this.ingestMessages = sendMessages;
+            this.keywords = new ArrayList<>(keywords);
+            this.locked = locked;
+        }
 
         KeywordSearchList(String name, Date created, Date modified, Boolean useForIngest, Boolean ingestMessages, List<Keyword> keywords, boolean locked) {
             this.name = name;
@@ -454,6 +468,14 @@ public abstract class KeywordSearchListsAbstract {
 
         KeywordSearchList(String name, Date created, Date modified, Boolean useForIngest, Boolean ingestMessages, List<Keyword> keywords) {
             this(name, created, modified, useForIngest, ingestMessages, keywords, false);
+        }
+        
+        public void addPropertyChangeListener(PropertyChangeListener pcl) {
+            pcs.addPropertyChangeListener(pcl);
+        }
+        
+        public void removePropertyChangeListener(PropertyChangeListener pcl) {
+            pcs.removePropertyChangeListener(pcl);
         }
 
         @Override
@@ -494,6 +516,7 @@ public abstract class KeywordSearchListsAbstract {
         }
 
         void setUseForIngest(boolean use) {
+            pcs.firePropertyChange(USE_FOR_INGEST_CHANGED, (boolean)this.useForIngest, (boolean)use);
             this.useForIngest = use;
         }
 
@@ -502,15 +525,34 @@ public abstract class KeywordSearchListsAbstract {
         }
 
         void setIngestMessages(boolean ingestMessages) {
+            pcs.firePropertyChange(SEND_MESSAGE_CHANGED, (boolean)this.ingestMessages, (boolean)ingestMessages);
             this.ingestMessages = ingestMessages;
         }
 
         public List<Keyword> getKeywords() {
-            return keywords;
+            return Collections.unmodifiableList(keywords);
         }
 
         boolean hasKeyword(Keyword keyword) {
             return keywords.contains(keyword);
+        }
+        
+        public void addKeyword(Keyword keyword) {
+            if (hasKeyword(keyword)) {
+                return;
+            }
+            
+            keywords.add(keyword);
+            pcs.firePropertyChange(KEYWORDS_CHANGED, null, keyword);
+        }
+        
+        public void removedKeyword(Keyword keyword) {
+            if (!keywords.contains(keyword)) {
+                return;
+            }
+            
+            keywords.remove(keyword);
+            pcs.firePropertyChange(KEYWORDS_CHANGED, keyword, null);
         }
 
         public boolean hasKeyword(String keyword) {
