@@ -60,6 +60,7 @@ import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.sleuthkit.autopsy.ingest.IngestManager;
 import org.sleuthkit.autopsy.keywordsearch.*;
 
@@ -225,17 +226,20 @@ public class RegressionTest extends TestCase {
 
     public void testConfigureSearch() {
         logger.info("Search Configure");
-        JDialog jd = JDialogOperator.waitJDialog("Advanced Keyword Search Configuration", false, false);
+        JDialog jd = JDialogOperator.waitJDialog(
+                NbBundle.getMessage(this.getClass(), "KeywordSearchConfigurationPanel.customizeComponents.title"), false, false);
         JDialogOperator jdo = new JDialogOperator(jd);
         //setListForIngest();
         String words = System.getProperty("keyword_path");
-        JButtonOperator jbo0 = new JButtonOperator(jdo, "Import List", 0);
+        JButtonOperator jbo0 = new JButtonOperator(jdo,
+                NbBundle.getMessage(this.getClass(), "KeywordSearchListsManagementPanel.importButton.text"), 0);
         jbo0.pushNoBlock();
         JFileChooserOperator jfco0 = new JFileChooserOperator();
         jfco0.chooseFile(words);
         JTableOperator jto = new JTableOperator(jdo, 0);
         jto.clickOnCell(0, 0);
-        JCheckBoxOperator jcbo = new JCheckBoxOperator(jdo, "Use during ingest", 0);
+        JCheckBoxOperator jcbo = new JCheckBoxOperator(jdo,
+                NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.useForIngestCheckbox.text"), 0);
         if (!jcbo.isSelected()) {
             jcbo.doClick();
         }
