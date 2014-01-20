@@ -33,7 +33,8 @@ import org.openide.util.NbBundle;
  */
 abstract class AbstractKeywordSearchPerformer extends javax.swing.JPanel implements KeywordSearchPerformerInterface {
 
-    private final String keywordSearchErrorDialogHeader = org.openide.util.NbBundle.getMessage(this.getClass(), "AbstractKeywordSearchPerformer.search.dialogErrorHeader");
+    private final String keywordSearchErrorDialogHeader = org.openide.util.NbBundle.getMessage(this.getClass(),
+            "AbstractKeywordSearchPerformer.search.dialogErrorHeader");
     protected int filesIndexed;
 
     AbstractKeywordSearchPerformer() {
@@ -97,8 +98,10 @@ abstract class AbstractKeywordSearchPerformer extends javax.swing.JPanel impleme
 
         //check if keyword search module  ingest is running (indexing, etc)
         if (isRunning) {
-            if (KeywordSearchUtil.displayConfirmDialog(org.openide.util.NbBundle.getMessage(this.getClass(), "AbstractKeywordSearchPerformer.search.searchIngestInProgressTitle"),
-                    NbBundle.getMessage(this.getClass(), "AbstractKeywordSearchPerformer.search.ingestInProgressBody"), KeywordSearchUtil.DIALOG_MESSAGE_TYPE.WARN) == false) {
+            if (KeywordSearchUtil.displayConfirmDialog(org.openide.util.NbBundle.getMessage(this.getClass(),
+                    "AbstractKeywordSearchPerformer.search.searchIngestInProgressTitle"),
+                    NbBundle.getMessage(this.getClass(), "AbstractKeywordSearchPerformer.search.ingestInProgressBody"),
+                    KeywordSearchUtil.DIALOG_MESSAGE_TYPE.WARN) == false) {
                 return;
             }
         }

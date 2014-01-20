@@ -33,6 +33,7 @@ import java.util.logging.Level;
 
 import org.openide.util.NbBundle;
 import org.sleuthkit.autopsy.coreutils.Logger;
+
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.DefaultListSelectionModel;
@@ -47,13 +48,14 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+
 import org.sleuthkit.autopsy.corecomponents.OptionsPanel;
 import org.sleuthkit.autopsy.ingest.IngestManager;
 import org.sleuthkit.autopsy.ingest.IngestManager.IngestModuleEvent;
 import org.sleuthkit.datamodel.BlackboardAttribute;
 
 /**
- *  KeywordSearchEditListPanel widget to manage keywords in lists
+ * KeywordSearchEditListPanel widget to manage keywords in lists
  */
 class KeywordSearchEditListPanel extends javax.swing.JPanel implements ListSelectionListener, OptionsPanel {
 
@@ -61,24 +63,32 @@ class KeywordSearchEditListPanel extends javax.swing.JPanel implements ListSelec
     private KeywordTableModel tableModel;
     private KeywordSearchListsAbstract.KeywordSearchList currentKeywordList;
 
-    
+
     private boolean ingestRunning;
 
-    /** Creates new form KeywordSearchEditListPanel */
+    /**
+     * Creates new form KeywordSearchEditListPanel
+     */
     KeywordSearchEditListPanel() {
         tableModel = new KeywordTableModel();
         initComponents();
         customizeComponents();
     }
-    
+
 
     private void customizeComponents() {
-        chRegex.setToolTipText(NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.customizeComponents.kwReToolTip"));
-        addWordButton.setToolTipText((NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.customizeComponents.addWordToolTip")));
-        addWordField.setToolTipText(NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.customizeComponents.enterNewWordToolTip"));
-        exportButton.setToolTipText(NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.customizeComponents.exportToFile"));
-        saveListButton.setToolTipText(NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.customizeComponents.saveCurrentWIthNewNameToolTip"));
-        deleteWordButton.setToolTipText(NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.customizeComponents.removeSelectedMsg"));
+        chRegex.setToolTipText(
+                NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.customizeComponents.kwReToolTip"));
+        addWordButton.setToolTipText((NbBundle.getMessage(this.getClass(),
+                "KeywordSearchEditListPanel.customizeComponents.addWordToolTip")));
+        addWordField.setToolTipText(NbBundle.getMessage(this.getClass(),
+                "KeywordSearchEditListPanel.customizeComponents.enterNewWordToolTip"));
+        exportButton.setToolTipText(
+                NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.customizeComponents.exportToFile"));
+        saveListButton.setToolTipText(NbBundle.getMessage(this.getClass(),
+                "KeywordSearchEditListPanel.customizeComponents.saveCurrentWIthNewNameToolTip"));
+        deleteWordButton.setToolTipText(NbBundle.getMessage(this.getClass(),
+                "KeywordSearchEditListPanel.customizeComponents.removeSelectedMsg"));
 
         //keywordTable.setAutoscrolls(true);
         //keywordTable.setTableHeader(null);
@@ -105,7 +115,7 @@ class KeywordSearchEditListPanel extends javax.swing.JPanel implements ListSelec
 
         final ListSelectionModel lsm = keywordTable.getSelectionModel();
         lsm.addListSelectionListener(new ListSelectionListener() {
-   
+
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (lsm.isSelectionEmpty() || currentKeywordList.isLocked()) {
@@ -114,7 +124,7 @@ class KeywordSearchEditListPanel extends javax.swing.JPanel implements ListSelec
                 } else {
                     deleteWordButton.setEnabled(true);
                 }
-                
+
                 //show selector if available
                 DefaultListSelectionModel selModel = (DefaultListSelectionModel) e.getSource();
                 if (!selModel.getValueIsAdjusting()) {
@@ -133,7 +143,7 @@ class KeywordSearchEditListPanel extends javax.swing.JPanel implements ListSelec
         });
 
         //loadDefaultKeywords();
-        
+
 
         initButtons();
 
@@ -160,7 +170,6 @@ class KeywordSearchEditListPanel extends javax.swing.JPanel implements ListSelec
         selectAllMenuItem.addActionListener(actList);
 
 
-
         if (IngestManager.getDefault().isModuleRunning(KeywordSearchIngestModule.getDefault())) {
             initIngest(0);
         } else {
@@ -173,13 +182,13 @@ class KeywordSearchEditListPanel extends javax.swing.JPanel implements ListSelec
             public void propertyChange(PropertyChangeEvent evt) {
                 String changed = evt.getPropertyName();
                 Object oldValue = evt.getOldValue();
-                if (changed.equals(IngestModuleEvent.COMPLETED.toString() )
+                if (changed.equals(IngestModuleEvent.COMPLETED.toString())
                         && ((String) oldValue).equals(KeywordSearchIngestModule.MODULE_NAME)) {
                     initIngest(1);
-                } else if (changed.equals(IngestModuleEvent.STARTED.toString() )
+                } else if (changed.equals(IngestModuleEvent.STARTED.toString())
                         && ((String) oldValue).equals(KeywordSearchIngestModule.MODULE_NAME)) {
                     initIngest(0);
-                } else if (changed.equals(IngestModuleEvent.STOPPED.toString() )
+                } else if (changed.equals(IngestModuleEvent.STOPPED.toString())
                         && ((String) oldValue).equals(KeywordSearchIngestModule.MODULE_NAME)) {
                     initIngest(1);
                 }
@@ -187,11 +196,11 @@ class KeywordSearchEditListPanel extends javax.swing.JPanel implements ListSelec
         });
     }
 
-    /** 
+    /**
      * Initialize this panel depending on whether ingest is running
-     * @param running 
-     * case 0: ingest running
-     * case 1: ingest not running
+     *
+     * @param running case 0: ingest running
+     *                case 1: ingest not running
      */
     private void initIngest(int running) {
         switch (running) {
@@ -253,7 +262,8 @@ class KeywordSearchEditListPanel extends javax.swing.JPanel implements ListSelec
         }
     }
 
-    /** This method is called from within the constructor to
+    /**
+     * This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
@@ -286,16 +296,20 @@ class KeywordSearchEditListPanel extends javax.swing.JPanel implements ListSelec
         saveListButton = new javax.swing.JButton();
         exportButton = new javax.swing.JButton();
 
-        cutMenuItem.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class, "KeywordSearchEditListPanel.cutMenuItem.text")); // NOI18N
+        cutMenuItem.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class,
+                "KeywordSearchEditListPanel.cutMenuItem.text")); // NOI18N
         rightClickMenu.add(cutMenuItem);
 
-        copyMenuItem.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class, "KeywordSearchEditListPanel.copyMenuItem.text")); // NOI18N
+        copyMenuItem.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class,
+                "KeywordSearchEditListPanel.copyMenuItem.text")); // NOI18N
         rightClickMenu.add(copyMenuItem);
 
-        pasteMenuItem.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class, "KeywordSearchEditListPanel.pasteMenuItem.text")); // NOI18N
+        pasteMenuItem.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class,
+                "KeywordSearchEditListPanel.pasteMenuItem.text")); // NOI18N
         rightClickMenu.add(pasteMenuItem);
 
-        selectAllMenuItem.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class, "KeywordSearchEditListPanel.selectAllMenuItem.text")); // NOI18N
+        selectAllMenuItem.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class,
+                "KeywordSearchEditListPanel.selectAllMenuItem.text")); // NOI18N
         rightClickMenu.add(selectAllMenuItem);
 
         setMinimumSize(new java.awt.Dimension(340, 300));
@@ -310,35 +324,40 @@ class KeywordSearchEditListPanel extends javax.swing.JPanel implements ListSelec
         keywordTable.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(keywordTable);
 
-        useForIngestCheckbox.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class, "KeywordSearchEditListPanel.useForIngestCheckbox.text")); // NOI18N
+        useForIngestCheckbox.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class,
+                "KeywordSearchEditListPanel.useForIngestCheckbox.text")); // NOI18N
         useForIngestCheckbox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 useForIngestCheckboxActionPerformed(evt);
             }
         });
 
-        addWordButton.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class, "KeywordSearchEditListPanel.addWordButton.text")); // NOI18N
+        addWordButton.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class,
+                "KeywordSearchEditListPanel.addWordButton.text")); // NOI18N
         addWordButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addWordButtonActionPerformed(evt);
             }
         });
 
-        addWordField.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class, "KeywordSearchEditListPanel.addWordField.text")); // NOI18N
+        addWordField.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class,
+                "KeywordSearchEditListPanel.addWordField.text")); // NOI18N
         addWordField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addWordFieldActionPerformed(evt);
             }
         });
 
-        chRegex.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class, "KeywordSearchEditListPanel.chRegex.text")); // NOI18N
+        chRegex.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class,
+                "KeywordSearchEditListPanel.chRegex.text")); // NOI18N
         chRegex.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 chRegexActionPerformed(evt);
             }
         });
 
-        deleteWordButton.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class, "KeywordSearchEditListPanel.deleteWordButton.text")); // NOI18N
+        deleteWordButton.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class,
+                "KeywordSearchEditListPanel.deleteWordButton.text")); // NOI18N
         deleteWordButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteWordButtonActionPerformed(evt);
@@ -348,54 +367,73 @@ class KeywordSearchEditListPanel extends javax.swing.JPanel implements ListSelec
         javax.swing.GroupLayout addKeywordPanelLayout = new javax.swing.GroupLayout(addKeywordPanel);
         addKeywordPanel.setLayout(addKeywordPanelLayout);
         addKeywordPanelLayout.setHorizontalGroup(
-            addKeywordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(addKeywordPanelLayout.createSequentialGroup()
-                .addGroup(addKeywordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(addKeywordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                addKeywordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(addKeywordPanelLayout.createSequentialGroup()
-                            .addComponent(addWordField, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addComponent(addWordButton))
-                        .addComponent(deleteWordButton))
-                    .addComponent(chRegex, javax.swing.GroupLayout.Alignment.LEADING))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGroup(addKeywordPanelLayout.createParallelGroup(
+                                        javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addGroup(addKeywordPanelLayout.createParallelGroup(
+                                                javax.swing.GroupLayout.Alignment.LEADING)
+                                                .addGroup(addKeywordPanelLayout.createSequentialGroup()
+                                                        .addComponent(addWordField,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE, 216,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addPreferredGap(
+                                                                javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                                        .addComponent(addWordButton))
+                                                .addComponent(deleteWordButton))
+                                        .addComponent(chRegex, javax.swing.GroupLayout.Alignment.LEADING))
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         addKeywordPanelLayout.setVerticalGroup(
-            addKeywordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(addKeywordPanelLayout.createSequentialGroup()
-                .addGap(0, 0, 0)
-                .addGroup(addKeywordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(addWordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(addWordButton))
-                .addGap(7, 7, 7)
-                .addComponent(chRegex)
-                .addGap(7, 7, 7)
-                .addComponent(deleteWordButton)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                addKeywordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(addKeywordPanelLayout.createSequentialGroup()
+                                .addGap(0, 0, 0)
+                                .addGroup(addKeywordPanelLayout.createParallelGroup(
+                                        javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(addWordField, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(addWordButton))
+                                .addGap(7, 7, 7)
+                                .addComponent(chRegex)
+                                .addGap(7, 7, 7)
+                                .addComponent(deleteWordButton)
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        ingestMessagesCheckbox.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class, "KeywordSearchEditListPanel.ingestMessagesCheckbox.text")); // NOI18N
-        ingestMessagesCheckbox.setToolTipText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class, "KeywordSearchEditListPanel.ingestMessagesCheckbox.toolTipText")); // NOI18N
+        ingestMessagesCheckbox.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class,
+                "KeywordSearchEditListPanel.ingestMessagesCheckbox.text")); // NOI18N
+        ingestMessagesCheckbox.setToolTipText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class,
+                "KeywordSearchEditListPanel.ingestMessagesCheckbox.toolTipText")); // NOI18N
         ingestMessagesCheckbox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ingestMessagesCheckboxActionPerformed(evt);
             }
         });
 
-        keywordsLabel.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class, "KeywordSearchEditListPanel.keywordsLabel.text")); // NOI18N
+        keywordsLabel.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class,
+                "KeywordSearchEditListPanel.keywordsLabel.text")); // NOI18N
 
-        keywordOptionsLabel.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class, "KeywordSearchEditListPanel.keywordOptionsLabel.text")); // NOI18N
+        keywordOptionsLabel.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class,
+                "KeywordSearchEditListPanel.keywordOptionsLabel.text")); // NOI18N
 
-        listOptionsLabel.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class, "KeywordSearchEditListPanel.listOptionsLabel.text")); // NOI18N
+        listOptionsLabel.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class,
+                "KeywordSearchEditListPanel.listOptionsLabel.text")); // NOI18N
 
-        deleteListButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/sleuthkit/autopsy/keywordsearch/delete16.png"))); // NOI18N
-        deleteListButton.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class, "KeywordSearchEditListPanel.deleteListButton.text")); // NOI18N
+        deleteListButton.setIcon(new javax.swing.ImageIcon(
+                getClass().getResource("/org/sleuthkit/autopsy/keywordsearch/delete16.png"))); // NOI18N
+        deleteListButton.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class,
+                "KeywordSearchEditListPanel.deleteListButton.text")); // NOI18N
 
-        saveListButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/sleuthkit/autopsy/keywordsearch/save16.png"))); // NOI18N
-        saveListButton.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class, "KeywordSearchEditListPanel.saveListButton.text")); // NOI18N
+        saveListButton.setIcon(new javax.swing.ImageIcon(
+                getClass().getResource("/org/sleuthkit/autopsy/keywordsearch/save16.png"))); // NOI18N
+        saveListButton.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class,
+                "KeywordSearchEditListPanel.saveListButton.text")); // NOI18N
 
-        exportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/sleuthkit/autopsy/keywordsearch/export16.png"))); // NOI18N
-        exportButton.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class, "KeywordSearchEditListPanel.exportButton.text")); // NOI18N
+        exportButton.setIcon(new javax.swing.ImageIcon(
+                getClass().getResource("/org/sleuthkit/autopsy/keywordsearch/export16.png"))); // NOI18N
+        exportButton.setText(org.openide.util.NbBundle.getMessage(KeywordSearchEditListPanel.class,
+                "KeywordSearchEditListPanel.exportButton.text")); // NOI18N
         exportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportButtonActionPerformed(evt);
@@ -405,81 +443,117 @@ class KeywordSearchEditListPanel extends javax.swing.JPanel implements ListSelec
         javax.swing.GroupLayout listEditorPanelLayout = new javax.swing.GroupLayout(listEditorPanel);
         listEditorPanel.setLayout(listEditorPanelLayout);
         listEditorPanelLayout.setHorizontalGroup(
-            listEditorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(listEditorPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(listEditorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(listEditorPanelLayout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addComponent(addKeywordPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(listEditorPanelLayout.createSequentialGroup()
-                        .addGroup(listEditorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(listEditorPanelLayout.createSequentialGroup()
-                                .addComponent(listOptionsLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(listOptionsSeparator))
-                            .addGroup(listEditorPanelLayout.createSequentialGroup()
-                                .addComponent(keywordOptionsLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(keywordOptionsSeparator))
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(listEditorPanelLayout.createSequentialGroup()
-                                .addGroup(listEditorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(keywordsLabel)
-                                    .addGroup(listEditorPanelLayout.createSequentialGroup()
-                                        .addGap(10, 10, 10)
-                                        .addGroup(listEditorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(listEditorPanelLayout.createSequentialGroup()
-                                                .addComponent(exportButton)
-                                                .addGap(18, 18, 18)
-                                                .addComponent(saveListButton)
-                                                .addGap(18, 18, 18)
-                                                .addComponent(deleteListButton))
-                                            .addComponent(useForIngestCheckbox)
-                                            .addComponent(ingestMessagesCheckbox))))
-                                .addGap(0, 0, Short.MAX_VALUE)))
-                        .addContainerGap())))
+                listEditorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(listEditorPanelLayout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(listEditorPanelLayout.createParallelGroup(
+                                        javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(listEditorPanelLayout.createSequentialGroup()
+                                                .addGap(10, 10, 10)
+                                                .addComponent(addKeywordPanel, javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                        javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addGroup(listEditorPanelLayout.createSequentialGroup()
+                                                .addGroup(listEditorPanelLayout.createParallelGroup(
+                                                        javax.swing.GroupLayout.Alignment.LEADING)
+                                                        .addGroup(listEditorPanelLayout.createSequentialGroup()
+                                                                .addComponent(listOptionsLabel)
+                                                                .addPreferredGap(
+                                                                        javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                                .addComponent(listOptionsSeparator))
+                                                        .addGroup(listEditorPanelLayout.createSequentialGroup()
+                                                                .addComponent(keywordOptionsLabel)
+                                                                .addPreferredGap(
+                                                                        javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                                .addComponent(keywordOptionsSeparator))
+                                                        .addComponent(jScrollPane1,
+                                                                javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                        .addGroup(listEditorPanelLayout.createSequentialGroup()
+                                                                .addGroup(listEditorPanelLayout.createParallelGroup(
+                                                                        javax.swing.GroupLayout.Alignment.LEADING)
+                                                                        .addComponent(keywordsLabel)
+                                                                        .addGroup(
+                                                                                listEditorPanelLayout.createSequentialGroup()
+                                                                                        .addGap(10, 10, 10)
+                                                                                        .addGroup(
+                                                                                                listEditorPanelLayout.createParallelGroup(
+                                                                                                        javax.swing.GroupLayout.Alignment.LEADING)
+                                                                                                        .addGroup(
+                                                                                                                listEditorPanelLayout.createSequentialGroup()
+                                                                                                                        .addComponent(
+                                                                                                                                exportButton)
+                                                                                                                        .addGap(18,
+                                                                                                                                18,
+                                                                                                                                18)
+                                                                                                                        .addComponent(
+                                                                                                                                saveListButton)
+                                                                                                                        .addGap(18,
+                                                                                                                                18,
+                                                                                                                                18)
+                                                                                                                        .addComponent(
+                                                                                                                                deleteListButton))
+                                                                                                        .addComponent(
+                                                                                                                useForIngestCheckbox)
+                                                                                                        .addComponent(
+                                                                                                                ingestMessagesCheckbox))))
+                                                                .addGap(0, 0, Short.MAX_VALUE)))
+                                                .addContainerGap())))
         );
         listEditorPanelLayout.setVerticalGroup(
-            listEditorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, listEditorPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(keywordsLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 188, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGroup(listEditorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(listEditorPanelLayout.createSequentialGroup()
-                        .addGroup(listEditorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(keywordOptionsSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 7, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(keywordOptionsLabel))
-                        .addGap(7, 7, 7)
-                        .addComponent(addKeywordPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, 0)
-                        .addComponent(listOptionsLabel))
-                    .addGroup(listEditorPanelLayout.createSequentialGroup()
-                        .addGap(123, 123, 123)
-                        .addComponent(listOptionsSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 6, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(7, 7, 7)
-                .addComponent(useForIngestCheckbox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(ingestMessagesCheckbox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(listEditorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(exportButton)
-                    .addComponent(saveListButton)
-                    .addComponent(deleteListButton))
-                .addContainerGap())
+                listEditorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING,
+                                listEditorPanelLayout.createSequentialGroup()
+                                        .addContainerGap()
+                                        .addComponent(keywordsLabel)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 188,
+                                                javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGroup(listEditorPanelLayout.createParallelGroup(
+                                                javax.swing.GroupLayout.Alignment.LEADING)
+                                                .addGroup(listEditorPanelLayout.createSequentialGroup()
+                                                        .addGroup(listEditorPanelLayout.createParallelGroup(
+                                                                javax.swing.GroupLayout.Alignment.TRAILING)
+                                                                .addComponent(keywordOptionsSeparator,
+                                                                        javax.swing.GroupLayout.PREFERRED_SIZE, 7,
+                                                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                .addComponent(keywordOptionsLabel))
+                                                        .addGap(7, 7, 7)
+                                                        .addComponent(addKeywordPanel,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addGap(0, 0, 0)
+                                                        .addComponent(listOptionsLabel))
+                                                .addGroup(listEditorPanelLayout.createSequentialGroup()
+                                                        .addGap(123, 123, 123)
+                                                        .addComponent(listOptionsSeparator,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE, 6,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                        .addGap(7, 7, 7)
+                                        .addComponent(useForIngestCheckbox)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(ingestMessagesCheckbox)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED,
+                                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addGroup(listEditorPanelLayout.createParallelGroup(
+                                                javax.swing.GroupLayout.Alignment.BASELINE)
+                                                .addComponent(exportButton)
+                                                .addComponent(saveListButton)
+                                                .addComponent(deleteListButton))
+                                        .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(listEditorPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(listEditorPanel, javax.swing.GroupLayout.DEFAULT_SIZE,
+                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(listEditorPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(listEditorPanel, javax.swing.GroupLayout.DEFAULT_SIZE,
+                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -491,8 +565,11 @@ class KeywordSearchEditListPanel extends javax.swing.JPanel implements ListSelec
         if (newWord.equals("")) {
             return;
         } else if (currentKeywordList.hasKeyword(keyword)) {
-            KeywordSearchUtil.displayDialog(NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.newKwTitle"),
-                    NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.addWordButtonAction.kwAlreadyExistsMsg"), KeywordSearchUtil.DIALOG_MESSAGE_TYPE.INFO);
+            KeywordSearchUtil.displayDialog(
+                    NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.newKwTitle"),
+                    NbBundle.getMessage(this.getClass(),
+                            "KeywordSearchEditListPanel.addWordButtonAction.kwAlreadyExistsMsg"),
+                    KeywordSearchUtil.DIALOG_MESSAGE_TYPE.INFO);
             return;
         }
 
@@ -507,8 +584,10 @@ class KeywordSearchEditListPanel extends javax.swing.JPanel implements ListSelec
             valid = false;
         }
         if (!valid) {
-            KeywordSearchUtil.displayDialog(NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.newKwTitle"),
-                    NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.invalidKwMsg"), KeywordSearchUtil.DIALOG_MESSAGE_TYPE.ERROR);
+            KeywordSearchUtil.displayDialog(
+                    NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.newKwTitle"),
+                    NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.invalidKwMsg"),
+                    KeywordSearchUtil.DIALOG_MESSAGE_TYPE.ERROR);
             return;
         }
 
@@ -522,13 +601,15 @@ class KeywordSearchEditListPanel extends javax.swing.JPanel implements ListSelec
     }//GEN-LAST:event_addWordButtonActionPerformed
 
     private void deleteWordButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteWordButtonActionPerformed
-        if (KeywordSearchUtil.displayConfirmDialog(NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.removeKwMsg")
-                , NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.deleteWordButtonActionPerformed.delConfirmMsg")
-                , KeywordSearchUtil.DIALOG_MESSAGE_TYPE.WARN) ) {
-        
-        tableModel.deleteSelected(keywordTable.getSelectedRows());
-        KeywordSearchListsXML.getCurrent().addList(currentKeywordList);
-        initButtons();
+        if (KeywordSearchUtil.displayConfirmDialog(
+                NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.removeKwMsg")
+                , NbBundle.getMessage(this.getClass(),
+                "KeywordSearchEditListPanel.deleteWordButtonActionPerformed.delConfirmMsg")
+                , KeywordSearchUtil.DIALOG_MESSAGE_TYPE.WARN)) {
+
+            tableModel.deleteSelected(keywordTable.getSelectedRows());
+            KeywordSearchListsXML.getCurrent().addList(currentKeywordList);
+            initButtons();
         }
     }//GEN-LAST:event_deleteWordButtonActionPerformed
 
@@ -543,7 +624,8 @@ class KeywordSearchEditListPanel extends javax.swing.JPanel implements ListSelec
         JFileChooser chooser = new JFileChooser();
         final String EXTENSION = "xml";
         FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.exportButtonActionPerformed.fileFilterLabel"), EXTENSION);
+                NbBundle.getMessage(this.getClass(),
+                        "KeywordSearchEditListPanel.exportButtonActionPerformed.fileFilterLabel"), EXTENSION);
         chooser.setFileFilter(filter);
         chooser.setSelectedFile(new File(currentKeywordList.getName()));
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -565,7 +647,8 @@ class KeywordSearchEditListPanel extends javax.swing.JPanel implements ListSelec
             boolean shouldWrite = true;
             if (selFile.exists()) {
                 shouldWrite = KeywordSearchUtil.displayConfirmDialog(FEATURE_NAME,
-                        NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.exportButtonActionPerformed.fileExistPrompt",
+                        NbBundle.getMessage(this.getClass(),
+                                "KeywordSearchEditListPanel.exportButtonActionPerformed.fileExistPrompt",
                                 selFile.getName()), KeywordSearchUtil.DIALOG_MESSAGE_TYPE.WARN);
             }
             if (!shouldWrite) {
@@ -581,7 +664,8 @@ class KeywordSearchEditListPanel extends javax.swing.JPanel implements ListSelec
             boolean written = exporter.saveLists(toWrite);
             if (written) {
                 KeywordSearchUtil.displayDialog(FEATURE_NAME,
-                        NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.exportButtonActionPerformed.kwListExportedMsg"),
+                        NbBundle.getMessage(this.getClass(),
+                                "KeywordSearchEditListPanel.exportButtonActionPerformed.kwListExportedMsg"),
                         KeywordSearchUtil.DIALOG_MESSAGE_TYPE.INFO);
             }
         }
@@ -590,12 +674,12 @@ class KeywordSearchEditListPanel extends javax.swing.JPanel implements ListSelec
     private void chRegexActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chRegexActionPerformed
     }//GEN-LAST:event_chRegexActionPerformed
 
-private void useForIngestCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useForIngestCheckboxActionPerformed
-    ingestMessagesCheckbox.setEnabled(useForIngestCheckbox.isSelected());
-    currentKeywordList.setUseForIngest(useForIngestCheckbox.isSelected());
-    KeywordSearchListsXML updater = KeywordSearchListsXML.getCurrent();
-    updater.addList(currentKeywordList);
-}//GEN-LAST:event_useForIngestCheckboxActionPerformed
+    private void useForIngestCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useForIngestCheckboxActionPerformed
+        ingestMessagesCheckbox.setEnabled(useForIngestCheckbox.isSelected());
+        currentKeywordList.setUseForIngest(useForIngestCheckbox.isSelected());
+        KeywordSearchListsXML updater = KeywordSearchListsXML.getCurrent();
+        updater.addList(currentKeywordList);
+    }//GEN-LAST:event_useForIngestCheckboxActionPerformed
 
     private void ingestMessagesCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ingestMessagesCheckboxActionPerformed
         currentKeywordList.setIngestMessages(ingestMessagesCheckbox.isSelected());
@@ -658,19 +742,19 @@ private void useForIngestCheckboxActionPerformed(java.awt.event.ActionEvent evt)
     public void load() {
         // Implemented by parent panel
     }
-    
+
     KeywordSearchListsAbstract.KeywordSearchList getCurrentKeywordList() {
         return currentKeywordList;
     }
-    
+
     void setCurrentKeywordList(KeywordSearchListsAbstract.KeywordSearchList list) {
         currentKeywordList = list;
     }
-    
+
     void addDeleteButtonActionPerformed(ActionListener l) {
         deleteListButton.addActionListener(l);
     }
-    
+
     void addSaveButtonActionPerformed(ActionListener l) {
         saveListButton.addActionListener(l);
     }
@@ -698,7 +782,8 @@ private void useForIngestCheckboxActionPerformed(java.awt.event.ActionEvent evt)
                     colName = NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.kwColName");
                     break;
                 case 1:
-                    colName = NbBundle.getMessage(this.getClass(), "KeywordSearchEditListPanel.exportButtonActionPerformed.regExColName");
+                    colName = NbBundle.getMessage(this.getClass(),
+                            "KeywordSearchEditListPanel.exportButtonActionPerformed.regExColName");
                     break;
                 default:
                     ;
@@ -710,7 +795,7 @@ private void useForIngestCheckboxActionPerformed(java.awt.event.ActionEvent evt)
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             Object ret = null;
-            if(currentKeywordList == null) {
+            if (currentKeywordList == null) {
                 return "";
             }
             Keyword word = currentKeywordList.getKeywords().get(rowIndex);
@@ -743,7 +828,7 @@ private void useForIngestCheckboxActionPerformed(java.awt.event.ActionEvent evt)
         }
 
         void addKeyword(Keyword keyword) {
-            if(!currentKeywordList.hasKeyword(keyword)) {
+            if (!currentKeywordList.hasKeyword(keyword)) {
                 currentKeywordList.getKeywords().add(keyword);
             }
             fireTableDataChanged();
@@ -757,7 +842,7 @@ private void useForIngestCheckboxActionPerformed(java.awt.event.ActionEvent evt)
         void deleteSelected(int[] selected) {
             List<Keyword> words = currentKeywordList.getKeywords();
             Arrays.sort(selected);
-            for(int arrayi = selected.length-1; arrayi >= 0; arrayi--) {
+            for (int arrayi = selected.length - 1; arrayi >= 0; arrayi--) {
                 words.remove(selected[arrayi]);
             }
             resync();

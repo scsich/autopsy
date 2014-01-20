@@ -163,31 +163,38 @@ class KeywordSearchListsViewerPanel extends AbstractKeywordSearchPerformer {
     private void initIngest(boolean running) {
         if (running) {
             ingestRunning = true;
-            searchAddButton.setText(NbBundle.getMessage(this.getClass(), "KeywordSearchListsViewerPanel.initIngest.addIngestTitle"));
-            searchAddButton.setToolTipText(NbBundle.getMessage(this.getClass(), "KeywordSearchListsViewerPanel.initIngest.addIngestMsg" ));
+            searchAddButton.setText(
+                    NbBundle.getMessage(this.getClass(), "KeywordSearchListsViewerPanel.initIngest.addIngestTitle"));
+            searchAddButton.setToolTipText(
+                    NbBundle.getMessage(this.getClass(), "KeywordSearchListsViewerPanel.initIngest.addIngestMsg"));
             listsTableModel.resync();
-            
+
         } else {
             ingestRunning = false;
-            searchAddButton.setText(NbBundle.getMessage(this.getClass(), "KeywordSearchListsViewerPanel.initIngest.searchIngestTitle"));
-            searchAddButton.setToolTipText(NbBundle.getMessage(this.getClass(), "KeywordSearchListsViewerPanel.initIngest.addIdxSearchMsg"));
+            searchAddButton.setText(
+                    NbBundle.getMessage(this.getClass(), "KeywordSearchListsViewerPanel.initIngest.searchIngestTitle"));
+            searchAddButton.setToolTipText(
+                    NbBundle.getMessage(this.getClass(), "KeywordSearchListsViewerPanel.initIngest.addIdxSearchMsg"));
             listsTableModel.resync();
         }
         updateIngestIndexLabel(running);
     }
-    
+
     private void updateIngestIndexLabel(boolean ingestRunning) {
         if (ingestRunning) {
-            ingestIndexLabel.setText(NbBundle.getMessage(this.getClass(), "KeywordSearchListsViewerPanel.initIngest.ongoingIngestMsg", filesIndexed));
-        }
-        else {
-            ingestIndexLabel.setText(NbBundle.getMessage(this.getClass(), "KeywordSearchListsViewerPanel.initIngest.fileIndexCtMsg", filesIndexed));
+            ingestIndexLabel.setText(
+                    NbBundle.getMessage(this.getClass(), "KeywordSearchListsViewerPanel.initIngest.ongoingIngestMsg",
+                            filesIndexed));
+        } else {
+            ingestIndexLabel.setText(
+                    NbBundle.getMessage(this.getClass(), "KeywordSearchListsViewerPanel.initIngest.fileIndexCtMsg",
+                            filesIndexed));
         }
     }
-    
+
     @Override
     protected void postFilesIndexedChange() {
-         updateIngestIndexLabel(ingestRunning);
+        updateIngestIndexLabel(ingestRunning);
     }
 
     /**
@@ -234,53 +241,62 @@ class KeywordSearchListsViewerPanel extends AbstractKeywordSearchPerformer {
 
         jSplitPane1.setRightComponent(rightPane);
 
-        manageListsButton.setText(org.openide.util.NbBundle.getMessage(KeywordSearchListsViewerPanel.class, "KeywordSearchListsViewerPanel.manageListsButton.text")); // NOI18N
-        manageListsButton.setToolTipText(org.openide.util.NbBundle.getMessage(KeywordSearchListsViewerPanel.class, "KeywordSearchListsViewerPanel.manageListsButton.toolTipText")); // NOI18N
+        manageListsButton.setText(org.openide.util.NbBundle.getMessage(KeywordSearchListsViewerPanel.class,
+                "KeywordSearchListsViewerPanel.manageListsButton.text")); // NOI18N
+        manageListsButton.setToolTipText(org.openide.util.NbBundle.getMessage(KeywordSearchListsViewerPanel.class,
+                "KeywordSearchListsViewerPanel.manageListsButton.toolTipText")); // NOI18N
         manageListsButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 manageListsButtonActionPerformed(evt);
             }
         });
 
-        searchAddButton.setText(org.openide.util.NbBundle.getMessage(KeywordSearchListsViewerPanel.class, "KeywordSearchListsViewerPanel.searchAddButton.text")); // NOI18N
+        searchAddButton.setText(org.openide.util.NbBundle.getMessage(KeywordSearchListsViewerPanel.class,
+                "KeywordSearchListsViewerPanel.searchAddButton.text")); // NOI18N
 
         ingestIndexLabel.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
-        ingestIndexLabel.setText(org.openide.util.NbBundle.getMessage(KeywordSearchListsViewerPanel.class, "KeywordSearchListsViewerPanel.ingestIndexLabel.text")); // NOI18N
+        ingestIndexLabel.setText(org.openide.util.NbBundle.getMessage(KeywordSearchListsViewerPanel.class,
+                "KeywordSearchListsViewerPanel.ingestIndexLabel.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(searchAddButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 220, Short.MAX_VALUE)
-                        .addComponent(manageListsButton))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(ingestIndexLabel)
-                        .addGap(0, 317, Short.MAX_VALUE)))
-                .addContainerGap())
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                        .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING,
+                                                layout.createSequentialGroup()
+                                                        .addComponent(searchAddButton)
+                                                        .addPreferredGap(
+                                                                javax.swing.LayoutStyle.ComponentPlacement.RELATED, 220,
+                                                                Short.MAX_VALUE)
+                                                        .addComponent(manageListsButton))
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addComponent(ingestIndexLabel)
+                                                .addGap(0, 317, Short.MAX_VALUE)))
+                                .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 268, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 7, Short.MAX_VALUE)
-                .addComponent(ingestIndexLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(manageListsButton)
-                    .addComponent(searchAddButton))
-                .addContainerGap())
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(jSplitPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 268,
+                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 7, Short.MAX_VALUE)
+                                .addComponent(ingestIndexLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(manageListsButton)
+                                        .addComponent(searchAddButton))
+                                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void manageListsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageListsButtonActionPerformed
         SystemAction.get(KeywordSearchConfigurationAction.class).performAction();
     }//GEN-LAST:event_manageListsButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel ingestIndexLabel;
     private javax.swing.JSplitPane jSplitPane1;
